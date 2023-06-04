@@ -27,6 +27,10 @@ const {
 
 router.post('/login', login);
 
+router.get('/test', (req, res) => {
+  res.status(200).json({ data: 'test data successful' });
+});
+
 router.post(
   '/register',
   fileUpload.single('profilePicture'),
