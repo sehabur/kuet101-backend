@@ -11,8 +11,8 @@ const MIME_TYPE_MAP = {
 };
 const awsBucket = process.env.AWS_BUCKET_NAME || 'kuetianshub';
 const region = process.env.AWS_BUCKET_REGION;
-const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+const accessKeyId = process.env.AWS_BUCKET_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_BUCKET_SECRET_ACCESS_KEY;
 
 const fileUpload = multer({
   storage: multer.memoryStorage(),
