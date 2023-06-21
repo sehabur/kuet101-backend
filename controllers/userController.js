@@ -8,7 +8,6 @@ const url = require('url');
 const User = require('../models/userModel');
 const { uploadSingleImage } = require('../middlewares/fileUpload');
 const { sendMailToUser } = require('../helper');
-const { urlencoded } = require('express');
 
 /*
   @api:       POST /api/users/login/
@@ -16,38 +15,15 @@ const { urlencoded } = require('express');
   @access:    public
 */
 const login = async (req, res, next) => {
-  // try {
-  const { rollNo, password } = req.body;
-  const user = await User.findOne({ rollNo });
+  try {
+    const { rollNo, password } = req.body;
+    const user = await User.findOne({ rollNo });
 
-  if (user) {
-    result = await bcrypt.compare(password, user.password);
-    if (result) {
-      const {
-        firstName,
-        lastName,
-        rollNo,
-        batch,
-        departmentLong,
-        departmentShort,
-        homeDistrict,
-        presentDistrict,
-        email,
-        phoneNo,
-        linkedinProfileUrl,
-        facebookProfileUrl,
-        status,
-        currentJobTitle,
-        currentOrganization,
-        profilePicture,
-        selfReferralCode,
-        isActive,
-        createdAt,
-      } = user;
-
-      res.status(200).json({
-        message: 'Login attempt successful.',
-        user: {
+    if (user) {
+      result = await bcrypt.compare(password, user.password);
+      if (result) {
+        const {
+          _id,
           firstName,
           lastName,
           rollNo,
@@ -67,22 +43,47 @@ const login = async (req, res, next) => {
           selfReferralCode,
           isActive,
           createdAt,
-          token: generateToken(user.id),
-          isLoggedIn: true,
-        },
-      });
+        } = user;
+
+        res.status(200).json({
+          message: 'Login attempt successful.',
+          user: {
+            _id,
+            firstName,
+            lastName,
+            rollNo,
+            batch,
+            departmentLong,
+            departmentShort,
+            homeDistrict,
+            presentDistrict,
+            email,
+            phoneNo,
+            linkedinProfileUrl,
+            facebookProfileUrl,
+            status,
+            currentJobTitle,
+            currentOrganization,
+            profilePicture,
+            selfReferralCode,
+            isActive,
+            createdAt,
+            token: generateToken(user.id),
+            isLoggedIn: true,
+          },
+        });
+      } else {
+        const error = createError(401, 'Password does not match.');
+        next(error);
+      }
     } else {
-      const error = createError(401, 'Password does not match.');
+      const error = createError(404, 'User not found');
       next(error);
     }
-  } else {
-    const error = createError(404, 'User not found');
+  } catch (err) {
+    const error = createError(500, 'Login failed. Unknown Error');
     next(error);
   }
-  // } catch (err) {
-  //   const error = createError(500, 'Login failed. Unknown Error');
-  //   next(error);
-  // }
 };
 
 /*
@@ -105,6 +106,7 @@ const register = async (req, res, next) => {
       departmentLong,
       departmentShort,
       homeDistrict,
+      currentlyLiveIn,
       presentDistrict,
       email,
       phoneNo,
@@ -136,7 +138,7 @@ const register = async (req, res, next) => {
         const profilePicture = req?.file
           ? await uploadSingleImage(req.file)
           : null;
-        const newuser = await User.create({
+        const newUser = await User.create({
           firstName,
           lastName,
           rollNo,
@@ -144,6 +146,7 @@ const register = async (req, res, next) => {
           departmentLong,
           departmentShort,
           homeDistrict,
+          currentlyLiveIn,
           presentDistrict,
           email,
           phoneNo,
@@ -159,7 +162,7 @@ const register = async (req, res, next) => {
 
         res.status(201).json({
           message: 'Account creation successful',
-          user: newuser,
+          user: newUser,
         });
       } else {
         const error = createError(400, 'Invalid referral code');
@@ -186,83 +189,87 @@ const register = async (req, res, next) => {
 const getFindYourMatesData = async (req, res, next) => {
   try {
     const { id, departmentShort, homeDistrict, batch } = req.user;
-    const usersByDept = await User.find({
-      _id: { $ne: id },
-      isActive: true,
-      departmentShort: departmentShort,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' })
-      .limit(8);
 
-    const usersByBatch = await User.find({
-      _id: { $ne: id },
-      isActive: true,
-      batch: batch,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' })
-      .limit(8);
+    const usersByDept = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: id },
+          isActive: true,
+          departmentShort: departmentShort,
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          __v: 0,
+        },
+      },
+      { $sample: { size: 8 } },
+    ]);
 
-    const usersByHomeDistrict = await User.find({
-      _id: { $ne: id },
-      isActive: true,
-      homeDistrict: homeDistrict,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' })
-      .limit(8);
+    const usersByBatch = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: id },
+          isActive: true,
+          batch: batch,
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          __v: 0,
+        },
+      },
+      { $sample: { size: 8 } },
+    ]);
 
-    const usersByTrend = await User.find({
-      _id: { $ne: id },
-      isActive: true,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' })
-      .limit(8);
+    const usersByHomeDistrict = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: id },
+          isActive: true,
+          homeDistrict: homeDistrict,
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          __v: 0,
+        },
+      },
+      { $sample: { size: 8 } },
+    ]);
+
+    const usersByTrend = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: id },
+          isActive: true,
+          isPopular: true,
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          __v: 0,
+        },
+      },
+      { $sample: { size: 8 } },
+    ]);
+
+    // const usersByDept = await User.find({
+    //   _id: { $ne: id },
+    //   isActive: true,
+    //   departmentShort: departmentShort,
+    // })
+    //   .select('-password -__v')
+    //   .sort({ updatedAt: 'desc' })
+    //   .limit(8);
 
     res.status(200).json({
       users: { usersByTrend, usersByDept, usersByBatch, usersByHomeDistrict },
     });
-  } catch (err) {
-    const error = createError(500, 'Unknown Error');
-    next(error);
-  }
-};
-
-/*
-  @api:       GET /api/users/dashboard?userId={user}
-  @desc:      get dashboard data
-  @access:    private
-*/
-const getDashboardData = async (req, res, next) => {
-  try {
-    let users;
-    const usersByDept = await User.find({
-      _id: { $ne: req.user.id },
-      isActive: true,
-      departmentShort: req.user.departmentShort,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' }); //
-
-    const usersByBatch = await User.find({
-      _id: { $ne: req.user.id },
-      isActive: true,
-      batch: req.user.batch,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' });
-
-    const usersByHomeDistrict = await User.find({
-      _id: { $ne: req.user.id },
-      isActive: true,
-      homeDistrict: req.user.homeDistrict,
-    })
-      .select('-password -__v')
-      .sort({ updatedAt: 'desc' });
-
-    res.status(200).json({ usersByDept, usersByBatch, usersByHomeDistrict });
   } catch (err) {
     const error = createError(500, 'Unknown Error');
     next(error);
@@ -304,10 +311,9 @@ const getUsersByQuery = async (req, res, next) => {
 
     for (key in filterOptions) {
       if (key === 'name') {
-        // split name into firstName and lastName //
         const nameKeywords = filterOptions[key]
           .split(' ')
-          .map((keyword) => new RegExp(keyword, 'i'));
+          .map((keyword) => new RegExp(keyword, 'i')); // split name into firstName and lastName //
         secondaryFilter.$or = [
           { firstName: { $in: nameKeywords } },
           { lastName: { $in: nameKeywords } },
@@ -323,16 +329,15 @@ const getUsersByQuery = async (req, res, next) => {
         secondaryFilter[key] = filterOptions[key];
       }
     }
-    console.log(secondaryFilter);
 
     const users = await User.find({
-      user: { $ne: req.user.id },
+      _id: { $ne: req.user.id },
       isActive: true,
       ...secondaryFilter,
     })
       .select({ __v: 0, password: 0 })
       .sort({ createdAt: 'desc' })
-      .limit(40);
+      .limit(30);
 
     if (users) {
       res.json({ users });
@@ -358,20 +363,23 @@ const updateUserProfile = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json(errors);
     }
-
     const userId = req.params.id;
     const {
       firstName,
       lastName,
+      batch,
+      departmentLong,
+      departmentShort,
       homeDistrict,
       presentDistrict,
       email,
       phoneNo,
-      profilePicture,
       linkedinProfileUrl,
       facebookProfileUrl,
       status,
+      currentJobTitle,
       currentOrganization,
+      profilePicture,
     } = req.body;
 
     let imageData;
@@ -390,15 +398,19 @@ const updateUserProfile = async (req, res, next) => {
         {
           firstName,
           lastName,
+          batch,
+          departmentLong,
+          departmentShort,
           homeDistrict,
           presentDistrict,
           email,
           phoneNo,
-          profilePicture: imageData,
           linkedinProfileUrl,
           facebookProfileUrl,
           status,
+          currentJobTitle,
           currentOrganization,
+          profilePicture: imageData,
         },
         { new: true }
       ).select('-password -__v');
@@ -569,7 +581,6 @@ const isValidateReferralCode = (code, numGenVar1, numGenVar2) => {
 module.exports = {
   login,
   register,
-  getDashboardData,
   getFindYourMatesData,
   getUserProfileById,
   updateUserProfile,

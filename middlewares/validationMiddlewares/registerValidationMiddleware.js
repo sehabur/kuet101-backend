@@ -18,7 +18,9 @@ const registerValidationMiddleware = [
   body('presentDistrict')
     .notEmpty()
     .withMessage('Please input Present District'),
-
+  body('currentlyLiveIn')
+    .notEmpty()
+    .withMessage('Please input where you currently live in'),
   body('linkedinProfileUrl')
     .notEmpty()
     .withMessage('Please input Linkedin Profile'),
@@ -26,12 +28,15 @@ const registerValidationMiddleware = [
     .notEmpty()
     .withMessage('Please input Facebook Profile'),
   body('status').notEmpty().withMessage('Please input status'),
-  body('currentOrganization')
-    .notEmpty()
-    .withMessage('Please input Current Organization'),
   body('referral').notEmpty().withMessage('Please input Referral Code'),
+];
+
+const enrollTutorValidationMiddleware = [
+  body('district').notEmpty().withMessage('Please input district'),
+  body('area').notEmpty().withMessage('Please input area'),
 ];
 
 module.exports = {
   registerValidationMiddleware,
+  enrollTutorValidationMiddleware,
 };

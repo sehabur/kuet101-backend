@@ -20,10 +20,12 @@ const { checkLogin } = require('../middlewares/authMiddleware');
 const { fileUpload } = require('../middlewares/fileUpload');
 const {
   registerValidationMiddleware,
+  enrollTutorValidationMiddleware,
 } = require('../middlewares/validationMiddlewares/registerValidationMiddleware');
 const {
   userUpdateValidationMiddleware,
 } = require('../middlewares/validationMiddlewares/userUpdateValidationMiddleware');
+const { enrollForTutor, findTutor } = require('../controllers/tutorController');
 
 router.post('/login', login);
 
@@ -51,6 +53,12 @@ router
 router.route('/findYourMates').get(checkLogin, getFindYourMatesData);
 
 router.route('/getUsersByQuery').get(checkLogin, getUsersByQuery);
+
+router
+  .route('/enrollForTutor')
+  .post(checkLogin, enrollTutorValidationMiddleware, enrollForTutor);
+
+router.route('/findTutor').get(checkLogin, findTutor);
 
 // router.post('/changePassword', checkLogin, changePassword);  // LATER WORK //
 // router.post('/resetPasswordLink', resetPasswordLink);

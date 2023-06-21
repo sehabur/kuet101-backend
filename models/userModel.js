@@ -31,6 +31,11 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    currentlyLiveIn: {
+      type: String,
+      enum: ['insideBd', 'outsideBd'],
+      required: true,
+    },
     presentDistrict: {
       type: String,
       required: true,
@@ -83,6 +88,10 @@ const userSchema = mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isPopular: {
+      type: Boolean,
+      default: false,
     },
     isAdmin: {
       type: Boolean,
