@@ -193,9 +193,14 @@ const getFindYourMatesData = async (req, res, next) => {
     const usersByDept = await User.aggregate([
       {
         $match: {
-          _id: { $ne: id },
-          isActive: true,
-          departmentShort: departmentShort,
+          $expr: {
+            $ne: [
+              '$_id',
+              {
+                $toObjectId: id,
+              },
+            ],
+          },
         },
       },
       {
@@ -210,7 +215,14 @@ const getFindYourMatesData = async (req, res, next) => {
     const usersByBatch = await User.aggregate([
       {
         $match: {
-          _id: { $ne: id },
+          $expr: {
+            $ne: [
+              '$_id',
+              {
+                $toObjectId: id,
+              },
+            ],
+          },
           isActive: true,
           batch: batch,
         },
@@ -227,7 +239,14 @@ const getFindYourMatesData = async (req, res, next) => {
     const usersByHomeDistrict = await User.aggregate([
       {
         $match: {
-          _id: { $ne: id },
+          $expr: {
+            $ne: [
+              '$_id',
+              {
+                $toObjectId: id,
+              },
+            ],
+          },
           isActive: true,
           homeDistrict: homeDistrict,
         },
@@ -244,7 +263,14 @@ const getFindYourMatesData = async (req, res, next) => {
     const usersByTrend = await User.aggregate([
       {
         $match: {
-          _id: { $ne: id },
+          $expr: {
+            $ne: [
+              '$_id',
+              {
+                $toObjectId: id,
+              },
+            ],
+          },
           isActive: true,
           isPopular: true,
         },
