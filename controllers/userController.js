@@ -201,6 +201,8 @@ const getFindYourMatesData = async (req, res, next) => {
               },
             ],
           },
+          isActive: true,
+          departmentShort: departmentShort,
         },
       },
       {
