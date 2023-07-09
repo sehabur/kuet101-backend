@@ -10,6 +10,7 @@ const {
   getDashboardData,
   getFindYourMatesData,
   getUsersByQuery,
+  webScrapper,
   //   changePassword,
   //   resetPasswordLink,
   //   setNewPassword,
@@ -32,6 +33,8 @@ router.post('/login', login);
 router.get('/test', (req, res) => {
   res.status(200).json({ data: 'test data successful' });
 });
+
+router.get('/webScrappingTest', webScrapper);
 
 router.post(
   '/register',

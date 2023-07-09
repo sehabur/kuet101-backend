@@ -9,12 +9,6 @@ const MIME_TYPE_MAP = {
   'image/jpg': 'jpg',
   'image/png': 'png',
 };
-// const awsBucket = process.env.AWS_BUCKET_NAME || 'kuetianshub';
-// const accessKeyId =
-//   process.env.AWS_BUCKET_ACCESS_KEY_ID || 'AKIASEBK72SYKYTMQJRE';
-// const secretAccessKey =
-//   process.env.AWS_BUCKET_SECRET_ACCESS_KEY ||
-//   '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';
 
 const awsBucket = process.env.AWS_BUCKET_NAME;
 const accessKeyId = process.env.AWS_BUCKET_ACCESS_KEY_ID;
