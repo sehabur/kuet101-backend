@@ -21,12 +21,12 @@ const registerValidationMiddleware = [
   body('currentlyLiveIn')
     .notEmpty()
     .withMessage('Please input where you currently live in'),
-  body('linkedinProfileUrl')
-    .notEmpty()
-    .withMessage('Please input Linkedin Profile'),
-  body('facebookProfileUrl')
-    .notEmpty()
-    .withMessage('Please input Facebook Profile'),
+  // body('linkedinProfileUrl')
+  //   .notEmpty()
+  //   .withMessage('Please input Linkedin Profile'),
+  // body('facebookProfileUrl')
+  //   .notEmpty()
+  //   .withMessage('Please input Facebook Profile'),
   body('status').notEmpty().withMessage('Please input status'),
   body('referral').notEmpty().withMessage('Please input Referral Code'),
 ];

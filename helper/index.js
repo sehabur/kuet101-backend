@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
 
-const sendMailToUser = async (mailTo, mailBody, subject) => {
+const sendMailToUser = async (mailFrom, mailTo, mailBody, subject) => {
   const transporter = nodemailer.createTransport(
     smtpTransport({
       service: 'gmail',
@@ -15,7 +15,10 @@ const sendMailToUser = async (mailTo, mailBody, subject) => {
 
   try {
     return await transporter.sendMail({
-      from: process.env.MAIL_USER,
+      from: {
+        name: 'Boiexchange',
+        address: mailFrom,
+      },
       to: mailTo,
       subject,
       html: mailBody,

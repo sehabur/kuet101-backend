@@ -49,16 +49,16 @@ const enrollForTutor = async (req, res, next) => {
 const findTutor = async (req, res, next) => {
   try {
     const tutors = await Tutor.find({
+      userProfile: { $ne: req.user.id },
       isActive: true,
     })
       .select('-__v')
       .populate({
         path: 'userProfile',
         select: '-password -__v',
-        options: { sort: { createdAt: 'desc' } },
       })
-      .sort({ updatedAt: 'desc' })
-      .limit(8);
+      .sort({ createdAt: 'desc' })
+      .limit(20);
 
     if (tutors) {
       res.json({ tutors });
@@ -72,9 +72,70 @@ const findTutor = async (req, res, next) => {
   }
 };
 
+/*
+  @api:       GET /api/users/getTutionEnrollmentByUser/:id
+  @desc:      Find a tutor
+  @access:    private
+*/
+const getTutionEnrollmentByUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const tutors = await Tutor.find({
+      userProfile: userId,
+      isActive: true,
+    })
+      .select('-__v')
+      .populate({
+        path: 'userProfile',
+        select: '-password -__v',
+      })
+      .sort({ createdAt: 'desc' })
+      .limit(20);
+
+    if (tutors) {
+      res.json({ tutors });
+    } else {
+      const error = createError(404, 'No Tutors Found');
+      next(error);
+    }
+  } catch (err) {
+    const error = createError(400, 'Error occured');
+    next(error);
+  }
+};
+
+/*
+  @api:       DELETE /api/users/deleteTutionEnrollment/:id
+  @desc:      Delete a post
+  @access:    private
+*/
+const deleteTutionEnrollment = async (req, res, next) => {
+  try {
+    const requestId = req.params.id;
+
+    const deleteRequest = await Tutor.deleteOne({ _id: requestId });
+
+    if (deleteRequest.deletedCount === 1) {
+      res.status(200).json({
+        message: 'Request deletion successful',
+        requestId,
+      });
+    } else {
+      res.status(400).json({
+        message: 'Request deletion failed',
+      });
+    }
+  } catch (err) {
+    const error = createError(400, err.message);
+    next(error);
+  }
+};
+
 // Exports //
 
 module.exports = {
   enrollForTutor,
   findTutor,
+  getTutionEnrollmentByUser,
+  deleteTutionEnrollment,
 };

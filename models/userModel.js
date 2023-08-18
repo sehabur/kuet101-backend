@@ -40,6 +40,16 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other'],
+      required: true,
+    },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'],
+      required: true,
+    },
     email: {
       type: String,
       required: true,
@@ -49,11 +59,9 @@ const userSchema = mongoose.Schema(
     },
     linkedinProfileUrl: {
       type: String,
-      required: true,
     },
     facebookProfileUrl: {
       type: String,
-      required: true,
     },
     password: {
       type: String,

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 
 // Internal imports //
 const userRoute = require('./routes/userRoute');
+const postRoute = require('./routes/postRoute');
 const {
   NotFoundHanlder,
   ErrorHanlder,
@@ -30,7 +31,8 @@ app.use((req, res, next) => {
 });
 
 // Routes //
-app.use('/api/users/', userRoute);
+app.use('/api/users', userRoute);
+app.use('/api/posts', postRoute);
 
 // Catch 404 and forward to NotFoundHanlder //
 app.use(NotFoundHanlder);

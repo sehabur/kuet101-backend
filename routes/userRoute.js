@@ -7,14 +7,22 @@ const {
   register,
   getUserProfileById,
   updateUserProfile,
-  getDashboardData,
   getFindYourMatesData,
   getUsersByQuery,
   webScrapper,
-  //   changePassword,
-  //   resetPasswordLink,
-  //   setNewPassword,
+  changePassword,
+  resetPasswordLink,
+  setNewPassword,
 } = require('../controllers/userController');
+
+const {
+  enrollForTutor,
+  findTutor,
+  getTutionEnrollmentByUser,
+  deleteTutionEnrollment,
+} = require('../controllers/tutorController');
+
+const { getAllEvents } = require('../controllers/eventController');
 
 const { checkLogin } = require('../middlewares/authMiddleware');
 
@@ -26,11 +34,10 @@ const {
 const {
   userUpdateValidationMiddleware,
 } = require('../middlewares/validationMiddlewares/userUpdateValidationMiddleware');
-const { enrollForTutor, findTutor } = require('../controllers/tutorController');
 
 router.post('/login', login);
 
-router.get('/test', (req, res) => {
+router.route('/test').get((req, res) => {
   res.status(200).json({ data: 'test data successful' });
 });
 
@@ -63,8 +70,18 @@ router
 
 router.route('/findTutor').get(checkLogin, findTutor);
 
-// router.post('/changePassword', checkLogin, changePassword);  // LATER WORK //
-// router.post('/resetPasswordLink', resetPasswordLink);
-// router.post('/setNewPassword', setNewPassword);
+router.route('/findTutor').get(checkLogin, findTutor);
+
+router
+  .route('/getTutionEnrollmentByUser/:id')
+  .get(checkLogin, getTutionEnrollmentByUser);
+
+router
+  .route('/deleteTutionEnrollment/:id')
+  .delete(checkLogin, deleteTutionEnrollment);
+
+router.post('/changePassword', checkLogin, changePassword);
+router.post('/resetPasswordLink', resetPasswordLink);
+router.post('/setNewPassword', setNewPassword);
 
 module.exports = router;
