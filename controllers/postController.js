@@ -44,7 +44,7 @@ const getPosts = async (req, res, next) => {
 /*
   @api:       GET /api/posts/:id
   @desc:      get a post by its Id
-  @access:    public
+  @access:    private
 */
 const getPostById = async (req, res, next) => {
   try {
