@@ -6,6 +6,9 @@
     "start": "node ./bin/www",
     "dev-server": "nodemon ./bin/www"
   },
+  "engines": {
+    "node": ">=14 <15"
+  },
   "dependencies": {
     "aws": "^0.0.3-2",
     "aws-sdk": "^2.1388.0",
