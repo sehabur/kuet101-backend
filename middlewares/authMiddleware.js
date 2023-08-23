@@ -18,9 +18,12 @@ const checkLogin = async (req, res, next) => {
           req.user = user;
           next();
         } else {
-          const error = createError(401, 'Invalid Token');
+          const error = createError(404, 'User not found');
           next(error);
         }
+      } else {
+        const error = createError(401, 'Invalid Token');
+        next(error);
       }
     } else {
       const error = createError(401, 'Invalid Token');
@@ -32,6 +35,16 @@ const checkLogin = async (req, res, next) => {
   }
 };
 
+const checkAdmin = async (req, res, next) => {
+  if (req?.user?.isAdmin) {
+    next();
+  } else {
+    const error = createError(401, 'User do not have admin access');
+    next(error);
+  }
+};
+
 module.exports = {
   checkLogin,
+  checkAdmin,
 };

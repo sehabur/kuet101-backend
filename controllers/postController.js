@@ -7,6 +7,7 @@ const AWS = require('aws-sdk');
 
 const {
   uploadSingleImage,
+  uploadMultipleImage,
   fileDeleteAwsS3,
   initilizeAwsS3,
 } = require('../middlewares/fileUpload');
@@ -90,25 +91,25 @@ const getPostsByUser = async (req, res, next) => {
   @access:    private
 */
 const createPost = async (req, res, next) => {
+  console.log(req.files);
   try {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       return res.status(400).json(errors);
     }
     const { title, description } = req.body;
 
-    const image = req?.file ? await uploadSingleImage(req.file) : null;
+    const images = req?.files ? await uploadMultipleImage(req.files) : null;
+
+    console.log(images);
 
     const newPost = new Post({
       title,
       description,
-      image,
+      images,
       user: req.user.id,
     });
-
     const createdNewPost = await newPost.save();
-
     res
       .status(201)
       .json({ message: 'Post created successfully', post: createdNewPost });
@@ -166,59 +167,59 @@ const deletePost = async (req, res, next) => {
   @access:    private
 */
 const getLearningFileStructure = async (req, res, next) => {
-  try {
-    const category = req.params.category;
+  // try {
+  const category = req.params.category;
 
-    const s3 = initilizeAwsS3();
+  const s3 = initilizeAwsS3();
 
-    const fileObjects = await s3
-      .listObjectsV2({
-        Bucket: 'kuetianshub',
-        Prefix: `files/${category}/`,
-      })
-      .promise();
+  const fileObjects = await s3
+    .listObjectsV2({
+      Bucket: 'kuetianshub',
+      Prefix: `files/${category}/`,
+    })
+    .promise();
 
-    const data = fileObjects.Contents.map((content) => {
-      return content.Key.split('/').slice(2);
-    });
+  const data = fileObjects.Contents.map((content) => {
+    return content.Key.split('/').slice(2);
+  });
 
-    const root = { type: 'root', contents: [] };
+  const root = { type: 'root', contents: [] };
 
-    data.forEach((item) => {
-      let currentLevel = root.contents;
-      item.forEach((name, index) => {
-        const existingFolder = currentLevel.find(
-          (folder) => folder.name === name && folder.type === 'subFolder'
-        );
+  data.forEach((item) => {
+    let currentLevel = root.contents;
+    item.forEach((name, index) => {
+      const existingFolder = currentLevel.find(
+        (folder) => folder.name === name && folder.type === 'subFolder'
+      );
 
-        if (index === item.length - 1) {
-          name &&
-            currentLevel.push({
-              type: 'file',
-              name,
-              url: encodeURI(
-                `${process.env.FRONTEND_CLOUD_IMAGE_URL}/files/dept/${item.join(
-                  '/'
-                )}`
-              ),
-            });
+      if (index === item.length - 1) {
+        name &&
+          currentLevel.push({
+            type: 'file',
+            name,
+            url: encodeURI(
+              `${process.env.FRONTEND_CLOUD_IMAGE_URL}/files/dept/${item.join(
+                '/'
+              )}`
+            ),
+          });
+      } else {
+        if (existingFolder) {
+          currentLevel = existingFolder.contents;
         } else {
-          if (existingFolder) {
-            currentLevel = existingFolder.contents;
-          } else {
-            const newFolder = { type: 'subFolder', name, contents: [] };
-            currentLevel.push(newFolder);
-            currentLevel = newFolder.contents;
-          }
+          const newFolder = { type: 'subFolder', name, contents: [] };
+          currentLevel.push(newFolder);
+          currentLevel = newFolder.contents;
         }
-      });
+      }
     });
+  });
 
-    res.status(200).json({ files: root.contents });
-  } catch (err) {
-    const error = createError(500, 'Error occured');
-    next(error);
-  }
+  res.status(200).json({ files: root.contents });
+  // } catch (err) {
+  //   const error = createError(500, 'Error occured');
+  //   next(error);
+  // }
 };
 
 /*

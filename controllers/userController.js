@@ -10,9 +10,10 @@ const scrapedin = require('scrapedin');
 const User = require('../models/userModel');
 const { uploadSingleImage } = require('../middlewares/fileUpload');
 const { sendMailToUser } = require('../helper');
-const { LinkedInProfileScraper } = require('linkedin-profile-scraper');
 
+const { LinkedInProfileScraper } = require('linkedin-profile-scraper');
 const { data } = require('../data/data.js');
+
 /*
   @api:       POST /api/users/login/
   @desc:      user login
@@ -46,6 +47,7 @@ const login = async (req, res, next) => {
           profilePicture,
           selfReferralCode,
           isActive,
+          isAdmin,
           createdAt,
         } = user;
 
@@ -71,6 +73,7 @@ const login = async (req, res, next) => {
             profilePicture,
             selfReferralCode,
             isActive,
+            isAdmin,
             createdAt,
             token: generateToken(user.id),
             isLoggedIn: true,
@@ -166,6 +169,7 @@ const register = async (req, res, next) => {
           currentJobTitle,
           currentOrganization,
           selfReferralCode,
+          approvalStatus: 'pending',
         });
 
         res.status(201).json({

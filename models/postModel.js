@@ -10,9 +10,11 @@ const postSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    image: {
-      type: String,
-    },
+    images: [
+      {
+        type: String,
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,

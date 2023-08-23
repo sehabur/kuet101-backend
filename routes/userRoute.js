@@ -50,15 +50,12 @@ router.post(
   register
 );
 
-router
-  .route('/profile/:id')
-  .get(checkLogin, getUserProfileById)
-  .patch(
-    checkLogin,
-    fileUpload.single('profilePicture'),
-    userUpdateValidationMiddleware,
-    updateUserProfile
-  );
+router.route('/profile/:id').get(checkLogin, getUserProfileById).patch(
+  checkLogin,
+  fileUpload.single('profilePicture'),
+  userUpdateValidationMiddleware
+  // updateUserProfile
+);
 
 router.route('/findYourMates').get(checkLogin, getFindYourMatesData);
 

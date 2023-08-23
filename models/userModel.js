@@ -95,7 +95,12 @@ const userSchema = mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    approvalStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      required: true,
     },
     isPopular: {
       type: Boolean,

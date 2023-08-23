@@ -28,10 +28,14 @@ router
   .get(checkLogin, getPosts)
   .post(
     checkLogin,
-    fileUpload.single('image'),
+    fileUpload.array('image', 8),
     postValidationMiddleware,
     createPost
   );
+
+// router.post('/', fileUpload.array('image', 8), (req, res) => {
+//   console.log('a', req.body, req.files, req.file);
+// });
 
 router.route('/getGalleryImages/').get(checkLogin, getGalleryImages);
 
