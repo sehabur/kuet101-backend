@@ -7,6 +7,7 @@ const {
   getPostById,
   getPostsByUser,
   createPost,
+  editPost,
   deletePost,
   getLearningFileStructure,
   getGalleryImages,
@@ -33,10 +34,6 @@ router
     createPost
   );
 
-// router.post('/', fileUpload.array('image', 8), (req, res) => {
-//   console.log('a', req.body, req.files, req.file);
-// });
-
 router.route('/getGalleryImages/').get(checkLogin, getGalleryImages);
 
 router
@@ -51,6 +48,12 @@ router
 router
   .route('/:id')
   .get(checkLogin, getPostById)
+  .patch(
+    checkLogin,
+    fileUpload.array('image', 8),
+    postValidationMiddleware,
+    editPost
+  )
   .delete(checkLogin, deletePost);
 
 router.route('/user/:id').get(checkLogin, getPostsByUser);

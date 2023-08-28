@@ -10,8 +10,8 @@ const MIME_TYPE_MAP = {
   'image/png': 'png',
 };
 
-const awsRegion = process.env.AWS_BUCKET_REGION;
-const awsBucket = process.env.AWS_BUCKET_NAME;
+const region = process.env.AWS_BUCKET_REGION;
+const bucketName = process.env.AWS_BUCKET_NAME || 'kuetianshub';
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
@@ -22,7 +22,7 @@ const fileUpload = multer({
 
 const initilizeAwsS3 = () => {
   AWS.config.update({
-    region: awsRegion,
+    region,
     apiVersion: 'latest',
     accessKeyId,
     secretAccessKey,
@@ -74,14 +74,14 @@ const uploadMultipleImage = async (
 
       if (!imageUploadResult) {
         const error = createError(400, 'Image upload failed');
-        console.log(error);
+        throw error;
       }
       uploadedImageArray.push(imageUploadResult.Key); //uploaded image key//
     }
     return uploadedImageArray;
   } catch (err) {
     const error = createError(400, err.message);
-    console.log(error);
+    throw error;
   }
 };
 
@@ -89,7 +89,7 @@ const fileUploadToAwsS3 = (s3, file, subFolder, customKey) => {
   try {
     const imageUploadResult = s3
       .upload({
-        Bucket: awsBucket,
+        Bucket: bucketName,
         Body: file.buffer,
         Key:
           subFolder +
@@ -98,25 +98,46 @@ const fileUploadToAwsS3 = (s3, file, subFolder, customKey) => {
           MIME_TYPE_MAP[file.mimetype],
       })
       .promise();
-
     return imageUploadResult;
   } catch (err) {
-    console.log(err);
+    const error = createError(400, err.message);
+    throw error;
   }
 };
 
-const fileDeleteAwsS3 = (key) => {
+const deleteSingleImage = async (key) => {
   try {
     const s3 = initilizeAwsS3();
+    await fileDeleteAwsS3(s3, key);
+  } catch (err) {
+    const error = createError(400, err.message);
+    next(error);
+  }
+};
 
+const deleteMultipleImage = async (keyArray) => {
+  try {
+    const s3 = initilizeAwsS3();
+    for (key of keyArray) {
+      await fileDeleteAwsS3(s3, key);
+    }
+  } catch (err) {
+    const error = createError(400, err.message);
+    next(error);
+  }
+};
+
+const fileDeleteAwsS3 = (s3, key) => {
+  try {
     return s3
       .deleteObject({
-        Bucket: awsBucket,
+        Bucket: bucketName,
         Key: key,
       })
       .promise();
   } catch (err) {
-    console.log(err);
+    const error = createError(400, err.message);
+    next(error);
   }
 };
 
@@ -124,7 +145,8 @@ module.exports = {
   fileUpload,
   initilizeAwsS3,
   fileUploadToAwsS3,
-  fileDeleteAwsS3,
   uploadSingleImage,
   uploadMultipleImage,
+  deleteSingleImage,
+  deleteMultipleImage,
 };

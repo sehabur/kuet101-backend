@@ -10,6 +10,7 @@ const {
   uploadMultipleImage,
   fileDeleteAwsS3,
   initilizeAwsS3,
+  deleteMultipleImage,
 } = require('../middlewares/fileUpload');
 const GalleryImage = require('../models/galleryImageModel');
 
@@ -23,19 +24,13 @@ const getPosts = async (req, res, next) => {
     const { user, limit } = url.parse(req.url, true).query;
 
     const posts = await Post.find({
-      user: { $ne: user },
       isActive: true,
+      user: { $ne: user },
     })
-      .select({ __v: 0 })
       .sort({ createdAt: 'desc' })
       .limit(limit);
 
-    if (posts) {
-      res.json({ posts });
-    } else {
-      const error = createError(404, 'No Posts Found');
-      next(error);
-    }
+    res.status(200).json({ posts });
   } catch (err) {
     const error = createError(500, 'No Posts Found');
     next(error);
@@ -57,7 +52,7 @@ const getPostById = async (req, res, next) => {
       );
 
     if (post) {
-      res.json({ post });
+      res.status(200).json({ post });
     } else {
       const error = createError(404, 'No Post Found');
       next(error);
@@ -91,7 +86,6 @@ const getPostsByUser = async (req, res, next) => {
   @access:    private
 */
 const createPost = async (req, res, next) => {
-  console.log(req.files);
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -100,8 +94,6 @@ const createPost = async (req, res, next) => {
     const { title, description } = req.body;
 
     const images = req?.files ? await uploadMultipleImage(req.files) : null;
-
-    console.log(images);
 
     const newPost = new Post({
       title,
@@ -120,6 +112,51 @@ const createPost = async (req, res, next) => {
 };
 
 /*
+  @api:       PATCH /api/posts/:id
+  @desc:      Edit a post
+  @access:    private
+*/
+const editPost = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json(errors);
+  }
+  const { title, description, image: imageStringArray = [] } = req.body;
+
+  const uploadedImagesArray = req?.files
+    ? await uploadMultipleImage(req.files)
+    : null;
+
+  const post = await Post.findById(req.params.id);
+
+  if (post) {
+    if (post.user.toString() === req.user.id) {
+      const updatedPost = await post
+        .updateOne({
+          title,
+          description,
+          images: [...imageStringArray, ...uploadedImagesArray],
+        })
+        .exec();
+
+      res.status(201).json({
+        message: 'Post edited successfuly',
+        updatedPost,
+      });
+    } else {
+      res.status(401).json({
+        message: 'Post edit failed',
+      });
+    }
+  } else {
+    res.status(400).json({
+      message: 'Post edit failed as post not found',
+    });
+  }
+};
+
+/*
   @api:       DELETE /api/posts/:id
   @desc:      Delete a post
   @access:    private
@@ -134,7 +171,7 @@ const deletePost = async (req, res, next) => {
         const deletePost = await Post.deleteOne({ _id: postId });
 
         if (deletePost.deletedCount === 1) {
-          post.image1 && (await fileDeleteAwsS3(image1));
+          post.images && (await deleteMultipleImage(post.images));
 
           res.status(200).json({
             message: 'Post deletion successful',
@@ -324,6 +361,7 @@ module.exports = {
   getPostById,
   getPostsByUser,
   createPost,
+  editPost,
   deletePost,
   getLearningFileStructure,
   getGalleryImages,

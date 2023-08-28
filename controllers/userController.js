@@ -585,7 +585,7 @@ const resetPasswordLink = async (req, res, next) => {
 
       await User.findOneAndUpdate(user._id, {
         resetToken,
-        resetTokenExpiry: addMinutes(new Date(), 10), // 10 min from now //
+        resetTokenExpiry: addMinutes(new Date(), 15), // 15 min from now //
       });
 
       const verificationLink = `${process.env.FRONT_END_URL}/manage-password/set-new?user=${user._id}&resetToken=${resetToken}`;
