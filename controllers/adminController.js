@@ -1,18 +1,7 @@
 const createError = require('http-errors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { v4: uuidv4 } = require('uuid');
 const url = require('url');
-const cheerio = require('cheerio');
-const axios = require('axios');
-const scrapedin = require('scrapedin');
 const User = require('../models/userModel');
-const { uploadSingleImage } = require('../middlewares/fileUpload');
-const { sendMailToUser } = require('../helper');
-const { LinkedInProfileScraper } = require('linkedin-profile-scraper');
-
-const { data } = require('../data/data.js');
 
 /*
   @api:       POST /api/admin/getUsers?approval={pending}&active={true}
@@ -171,6 +160,7 @@ const updateUserStatus = async (req, res, next) => {
       {
         approvalStatus,
         isActive,
+        isVerified: approvalStatus === 'approved' ? true : false,
       },
       { new: true }
     ).select('-password -__v');
@@ -185,7 +175,6 @@ const updateUserStatus = async (req, res, next) => {
 };
 
 // Exports //
-
 module.exports = {
   getDashboardData,
   getUsers,

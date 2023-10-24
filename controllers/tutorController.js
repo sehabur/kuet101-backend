@@ -1,14 +1,6 @@
 const createError = require('http-errors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { v4: uuidv4 } = require('uuid');
 const url = require('url');
-
-const User = require('../models/userModel');
-const { uploadSingleImage } = require('../middlewares/fileUpload');
-const { sendMailToUser } = require('../helper');
-const { urlencoded } = require('express');
 const Tutor = require('../models/tutorModel');
 
 /*
@@ -42,14 +34,18 @@ const enrollForTutor = async (req, res, next) => {
 };
 
 /*
-  @api:       GET /api/users/findTutor
+  @api:       GET /api/users/findTutor?district={district}
   @desc:      Find a tutor
   @access:    private
 */
 const findTutor = async (req, res, next) => {
   try {
+    const { district } = url.parse(req.url, true).query;
+
+    console.log(district);
     const tutors = await Tutor.find({
       userProfile: { $ne: req.user.id },
+      district,
       isActive: true,
     })
       .select('-__v')

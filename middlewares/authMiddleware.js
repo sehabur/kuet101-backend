@@ -1,7 +1,5 @@
 const jwt = require('jsonwebtoken');
-
 const createError = require('http-errors');
-
 const User = require('../models/userModel');
 
 const checkLogin = async (req, res, next) => {
@@ -39,7 +37,7 @@ const checkAdmin = async (req, res, next) => {
   if (req?.user?.isAdmin) {
     next();
   } else {
-    const error = createError(401, 'User do not have admin access');
+    const error = createError(401, 'User do not have proper access');
     next(error);
   }
 };

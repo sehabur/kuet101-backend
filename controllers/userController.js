@@ -4,15 +4,15 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
 const url = require('url');
-const cheerio = require('cheerio');
 const axios = require('axios');
-const scrapedin = require('scrapedin');
 const User = require('../models/userModel');
 const { uploadSingleImage } = require('../middlewares/fileUpload');
 const { sendMailToUser } = require('../helper');
 
-const { LinkedInProfileScraper } = require('linkedin-profile-scraper');
-const { data } = require('../data/data.js');
+// const cheerio = require('cheerio');
+// const scrapedin = require('scrapedin');
+// const { LinkedInProfileScraper } = require('linkedin-profile-scraper');
+// const { data } = require('../data/data.js');
 
 /*
   @api:       POST /api/users/login/
@@ -25,6 +25,11 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ rollNo });
 
     if (user) {
+      if (!user.isVerified) {
+        const error = createError(401, 'User verification pending');
+        next(error);
+      }
+
       result = await bcrypt.compare(password, user.password);
       if (result) {
         const {
@@ -33,6 +38,9 @@ const login = async (req, res, next) => {
           lastName,
           rollNo,
           batch,
+          currentlyLiveIn,
+          gender,
+          bloodGroup,
           departmentLong,
           departmentShort,
           homeDistrict,
@@ -44,6 +52,9 @@ const login = async (req, res, next) => {
           status,
           currentJobTitle,
           currentOrganization,
+          interests,
+          expertin,
+          registrationNo,
           profilePicture,
           selfReferralCode,
           isActive,
@@ -59,6 +70,9 @@ const login = async (req, res, next) => {
             lastName,
             rollNo,
             batch,
+            currentlyLiveIn,
+            gender,
+            bloodGroup,
             departmentLong,
             departmentShort,
             homeDistrict,
@@ -70,6 +84,9 @@ const login = async (req, res, next) => {
             status,
             currentJobTitle,
             currentOrganization,
+            interests,
+            expertin,
+            registrationNo,
             profilePicture,
             selfReferralCode,
             isActive,
@@ -105,6 +122,7 @@ const register = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json(errors);
     }
+
     const {
       firstName,
       lastName,
@@ -125,6 +143,9 @@ const register = async (req, res, next) => {
       status,
       currentJobTitle,
       currentOrganization,
+      registrationNo,
+      interests,
+      expertin,
       referral,
     } = req.body;
 
@@ -168,6 +189,9 @@ const register = async (req, res, next) => {
           status,
           currentJobTitle,
           currentOrganization,
+          registrationNo,
+          interests: interests?.split(',').map((item) => item.trim()),
+          expertin: expertin?.split(',').map((item) => item.trim()),
           selfReferralCode,
           approvalStatus: 'pending',
         });
@@ -191,6 +215,27 @@ const register = async (req, res, next) => {
     const error = createError(400, 'Error occured');
     next(error);
   }
+};
+
+/*
+  @api:       GET /api/users/allInterests
+  @desc:      get all interests
+  @access:    public
+*/
+const getAllInterests = async (req, res, next) => {
+  const interest = await User.aggregate([
+    { $project: { items: { $concatArrays: ['$interests', '$expertin'] } } },
+  ]);
+
+  let interestList = [];
+
+  for (let item of interest) {
+    item?.items?.forEach((val) => val !== '' && interestList.push(val));
+  }
+
+  const finalData = [...new Set(interestList)];
+
+  res.status(200).json(finalData);
 };
 
 /*
@@ -373,6 +418,8 @@ const getUsersByQuery = async (req, res, next) => {
       }
     }
 
+    console.log(secondaryFilter);
+
     let users;
 
     if (filterOptions.currentOrganization) {
@@ -385,35 +432,13 @@ const getUsersByQuery = async (req, res, next) => {
           },
         },
         {
-          $project: {
-            firstName: 1,
-            lastName: 1,
-            rollNo: 1,
-            batch: 1,
-            departmentLong: 1,
-            departmentShort: 1,
-            homeDistrict: 1,
-            presentDistrict: 1,
-            email: 1,
-            phoneNo: 1,
-            linkedinProfileUrl: 1,
-            facebookProfileUrl: 1,
-            profilePicture: 1,
-            status: 1,
-            currentJobTitle: 1,
-            currentOrganization: 1,
-            createdAt: 1,
-            currentOrganizationArray: {
-              $split: [{ $toLower: '$currentOrganization' }, ' '],
-            },
-          },
-        },
-        {
           $addFields: {
             wordMatchCount: {
               $size: {
                 $setIntersection: [
-                  '$currentOrganizationArray',
+                  {
+                    $split: [{ $toLower: '$currentOrganization' }, ' '],
+                  },
                   currentOrgKeywords,
                 ],
               },
@@ -450,7 +475,6 @@ const getUsersByQuery = async (req, res, next) => {
       res.json({ users });
     } else {
       const error = createError(404, 'No Users Found');
-      k;
       next(error);
     }
   } catch (e) {
@@ -480,6 +504,9 @@ const updateUserProfile = async (req, res, next) => {
       departmentShort,
       homeDistrict,
       presentDistrict,
+      currentlyLiveIn,
+      gender,
+      bloodGroup,
       email,
       phoneNo,
       linkedinProfileUrl,
@@ -487,6 +514,9 @@ const updateUserProfile = async (req, res, next) => {
       status,
       currentJobTitle,
       currentOrganization,
+      registrationNo,
+      interests,
+      expertin,
       profilePicture,
     } = req.body;
 
@@ -511,6 +541,9 @@ const updateUserProfile = async (req, res, next) => {
           departmentShort,
           homeDistrict,
           presentDistrict,
+          currentlyLiveIn,
+          gender,
+          bloodGroup,
           email,
           phoneNo,
           linkedinProfileUrl,
@@ -518,6 +551,9 @@ const updateUserProfile = async (req, res, next) => {
           status,
           currentJobTitle,
           currentOrganization,
+          registrationNo,
+          interests,
+          expertin,
           profilePicture: imageData,
         },
         { new: true }
@@ -624,36 +660,39 @@ const resetPasswordLink = async (req, res, next) => {
   @access:    public
 */
 const setNewPassword = async (req, res, next) => {
-  // try {
-  const { newPassword, userId, resetToken } = req.body;
-  const user = await User.findById(userId);
+  try {
+    const { newPassword, userId, resetToken } = req.body;
+    const user = await User.findById(userId);
 
-  if (user) {
-    if (user.resetToken === resetToken && user.resetTokenExpiry > new Date()) {
-      await user.updateOne({
-        password: encriptPassword(newPassword),
-        resetToken: null,
-        resetTokenExpiry: null,
-      });
+    if (user) {
+      if (
+        user.resetToken === resetToken &&
+        user.resetTokenExpiry > new Date()
+      ) {
+        await user.updateOne({
+          password: encriptPassword(newPassword),
+          resetToken: null,
+          resetTokenExpiry: null,
+        });
 
-      res.status(201).json({
-        message: 'Password changed successfully',
-      });
+        res.status(201).json({
+          message: 'Password changed successfully',
+        });
+      } else {
+        const error = createError(
+          401,
+          'Your password reset link is invalid or got expired.'
+        );
+        next(error);
+      }
     } else {
-      const error = createError(
-        401,
-        'Your password reset link is invalid or got expired.'
-      );
+      const error = createError(500, 'User not found.');
       next(error);
     }
-  } else {
-    const error = createError(500, 'User not found.');
+  } catch (err) {
+    const error = createError(500, 'Password change failed.');
     next(error);
   }
-  // } catch (err) {
-  //   const error = createError(500, 'Password change failed.');
-  //   next(error);
-  // }
 };
 
 const webScrapper = async (req, res, next) => {
@@ -773,6 +812,7 @@ const addMinutes = (date, minutes) => {
 module.exports = {
   login,
   register,
+  getAllInterests,
   getFindYourMatesData,
   getUserProfileById,
   updateUserProfile,

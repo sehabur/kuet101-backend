@@ -7,10 +7,7 @@ const registerValidationMiddleware = [
     .withMessage('Password must be atleast 6 characters'),
   body('firstName').notEmpty().withMessage('Please input First Name'),
   body('lastName').notEmpty().withMessage('Please input Last Name'),
-  body('rollNo')
-    .notEmpty()
-    .isLength({ min: 6 })
-    .withMessage('Roll no must be atleast 6 digit'),
+  body('rollNo').notEmpty().withMessage('Please input Roll number'),
   body('batch').notEmpty().withMessage('Please input Batch'),
   body('departmentLong').notEmpty().withMessage('Please input department'),
   body('departmentShort').notEmpty().withMessage('Please input department'),
@@ -21,12 +18,6 @@ const registerValidationMiddleware = [
   body('currentlyLiveIn')
     .notEmpty()
     .withMessage('Please input where you currently live in'),
-  // body('linkedinProfileUrl')
-  //   .notEmpty()
-  //   .withMessage('Please input Linkedin Profile'),
-  // body('facebookProfileUrl')
-  //   .notEmpty()
-  //   .withMessage('Please input Facebook Profile'),
   body('status').notEmpty().withMessage('Please input status'),
   body('referral').notEmpty().withMessage('Please input Referral Code'),
 ];

@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   login,
   register,
+  getAllInterests,
   getUserProfileById,
   updateUserProfile,
   getFindYourMatesData,
@@ -22,26 +23,20 @@ const {
   deleteTutionEnrollment,
 } = require('../controllers/tutorController');
 
-const { getAllEvents } = require('../controllers/eventController');
-
 const { checkLogin } = require('../middlewares/authMiddleware');
 
 const { fileUpload } = require('../middlewares/fileUpload');
+
 const {
   registerValidationMiddleware,
   enrollTutorValidationMiddleware,
 } = require('../middlewares/validationMiddlewares/registerValidationMiddleware');
+
 const {
   userUpdateValidationMiddleware,
 } = require('../middlewares/validationMiddlewares/userUpdateValidationMiddleware');
 
 router.post('/login', login);
-
-router.route('/test').get((req, res) => {
-  res.status(200).json({ data: 'test data successful' });
-});
-
-router.get('/webScrappingTest', webScrapper);
 
 router.post(
   '/register',
@@ -50,12 +45,17 @@ router.post(
   register
 );
 
-router.route('/profile/:id').get(checkLogin, getUserProfileById).patch(
-  checkLogin,
-  fileUpload.single('profilePicture'),
-  userUpdateValidationMiddleware
-  // updateUserProfile
-);
+router
+  .route('/profile/:id')
+  .get(checkLogin, getUserProfileById)
+  .patch(
+    checkLogin,
+    fileUpload.single('profilePicture'),
+    userUpdateValidationMiddleware,
+    updateUserProfile
+  );
+
+router.route('/getAllInterests').get(getAllInterests);
 
 router.route('/findYourMates').get(checkLogin, getFindYourMatesData);
 
@@ -81,4 +81,12 @@ router.post('/changePassword', checkLogin, changePassword);
 router.post('/resetPasswordLink', resetPasswordLink);
 router.post('/setNewPassword', setNewPassword);
 
+// Test routes //
+
+router.route('/test').get((req, res) => {
+  res.status(200).json({ data: 'test data successful' });
+});
+router.get('/webScrappingTest', webScrapper);
+
+// Exports //
 module.exports = router;

@@ -83,14 +83,18 @@ const userSchema = mongoose.Schema(
     },
     currentJobTitle: {
       type: String,
-      required: true,
     },
     currentOrganization: {
       type: String,
-      required: true,
     },
+    registrationNo: { type: Number },
+
+    interests: [{ type: String }],
+
+    expertin: [{ type: String }],
+
     selfReferralCode: {
-      type: String,
+      type: Number,
       required: true,
     },
     isActive: {

@@ -10,8 +10,8 @@ const MIME_TYPE_MAP = {
   'image/png': 'png',
 };
 
-const region = process.env.AWS_BUCKET_REGION;
-const bucketName = process.env.AWS_BUCKET_NAME || 'kuetianshub';
+const region = 'us-west-2';
+const bucketName = 'kuetianshub';
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 

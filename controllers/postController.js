@@ -2,9 +2,6 @@ const createError = require('http-errors');
 const { validationResult } = require('express-validator');
 const url = require('url');
 const Post = require('../models/postModel');
-const User = require('../models/userModel');
-const AWS = require('aws-sdk');
-
 const {
   uploadSingleImage,
   uploadMultipleImage,
@@ -204,59 +201,59 @@ const deletePost = async (req, res, next) => {
   @access:    private
 */
 const getLearningFileStructure = async (req, res, next) => {
-  // try {
-  const category = req.params.category;
+  try {
+    const category = req.params.category;
 
-  const s3 = initilizeAwsS3();
+    const s3 = initilizeAwsS3();
 
-  const fileObjects = await s3
-    .listObjectsV2({
-      Bucket: 'kuetianshub',
-      Prefix: `files/${category}/`,
-    })
-    .promise();
+    const fileObjects = await s3
+      .listObjectsV2({
+        Bucket: 'kuetianshub',
+        Prefix: `files/${category}/`,
+      })
+      .promise();
 
-  const data = fileObjects.Contents.map((content) => {
-    return content.Key.split('/').slice(2);
-  });
-
-  const root = { type: 'root', contents: [] };
-
-  data.forEach((item) => {
-    let currentLevel = root.contents;
-    item.forEach((name, index) => {
-      const existingFolder = currentLevel.find(
-        (folder) => folder.name === name && folder.type === 'subFolder'
-      );
-
-      if (index === item.length - 1) {
-        name &&
-          currentLevel.push({
-            type: 'file',
-            name,
-            url: encodeURI(
-              `${process.env.FRONTEND_CLOUD_IMAGE_URL}/files/dept/${item.join(
-                '/'
-              )}`
-            ),
-          });
-      } else {
-        if (existingFolder) {
-          currentLevel = existingFolder.contents;
-        } else {
-          const newFolder = { type: 'subFolder', name, contents: [] };
-          currentLevel.push(newFolder);
-          currentLevel = newFolder.contents;
-        }
-      }
+    const data = fileObjects.Contents.map((content) => {
+      return content.Key.split('/').slice(2);
     });
-  });
 
-  res.status(200).json({ files: root.contents });
-  // } catch (err) {
-  //   const error = createError(500, 'Error occured');
-  //   next(error);
-  // }
+    const root = { type: 'root', contents: [] };
+
+    data.forEach((item) => {
+      let currentLevel = root.contents;
+      item.forEach((name, index) => {
+        const existingFolder = currentLevel.find(
+          (folder) => folder.name === name && folder.type === 'subFolder'
+        );
+
+        if (index === item.length - 1) {
+          name &&
+            currentLevel.push({
+              type: 'file',
+              name,
+              url: encodeURI(
+                `${
+                  process.env.FRONTEND_CLOUD_IMAGE_URL
+                }/files/${category}/${item.join('/')}`
+              ),
+            });
+        } else {
+          if (existingFolder) {
+            currentLevel = existingFolder.contents;
+          } else {
+            const newFolder = { type: 'subFolder', name, contents: [] };
+            currentLevel.push(newFolder);
+            currentLevel = newFolder.contents;
+          }
+        }
+      });
+    });
+
+    res.status(200).json({ files: root.contents });
+  } catch (err) {
+    const error = createError(500, 'Error occured');
+    next(error);
+  }
 };
 
 /*
