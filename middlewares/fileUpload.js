@@ -10,8 +10,7 @@ const MIME_TYPE_MAP = {
   'image/png': 'png',
 };
 
-const region = 'us-west-2';
-const bucketName = 'kuetianshub';
+const bucketName = 'kuetianshub-bucket';
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
@@ -22,7 +21,6 @@ const fileUpload = multer({
 
 const initilizeAwsS3 = () => {
   AWS.config.update({
-    region,
     apiVersion: 'latest',
     accessKeyId,
     secretAccessKey,
