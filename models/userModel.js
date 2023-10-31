@@ -87,7 +87,7 @@ const userSchema = mongoose.Schema(
     currentOrganization: {
       type: String,
     },
-    registrationNo: { type: Number },
+    registrationNo: { type: String },
 
     interests: [{ type: String }],
 

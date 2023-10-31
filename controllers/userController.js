@@ -411,14 +411,15 @@ const getUsersByQuery = async (req, res, next) => {
         secondaryFilter[key] = { $in: jobTitleKeywords };
       } else if (key === 'currentOrganization') {
         currentOrgKeywords = filterOptions[key].toLowerCase().split(' ');
+      } else if (key === 'presentDistrict') {
+        secondaryFilter[key] = { $regex: filterOptions[key], $options: 'i' };
       } else if (key === 'search') {
         // do nothing //
       } else {
         secondaryFilter[key] = filterOptions[key];
       }
     }
-
-    console.log(secondaryFilter);
+    // console.log(secondaryFilter);
 
     let users;
 
@@ -489,87 +490,87 @@ const getUsersByQuery = async (req, res, next) => {
   @access:    private
 */
 const updateUserProfile = async (req, res, next) => {
-  try {
-    const errors = validationResult(req);
+  // try {
+  const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors);
-    }
-    const userId = req.params.id;
-    const {
-      firstName,
-      lastName,
-      batch,
-      departmentLong,
-      departmentShort,
-      homeDistrict,
-      presentDistrict,
-      currentlyLiveIn,
-      gender,
-      bloodGroup,
-      email,
-      phoneNo,
-      linkedinProfileUrl,
-      facebookProfileUrl,
-      status,
-      currentJobTitle,
-      currentOrganization,
-      registrationNo,
-      interests,
-      expertin,
-      profilePicture,
-    } = req.body;
+  if (!errors.isEmpty()) {
+    return res.status(400).json(errors);
+  }
+  const userId = req.params.id;
+  const {
+    firstName,
+    lastName,
+    batch,
+    departmentLong,
+    departmentShort,
+    homeDistrict,
+    presentDistrict,
+    currentlyLiveIn,
+    gender,
+    bloodGroup,
+    email,
+    phoneNo,
+    linkedinProfileUrl,
+    facebookProfileUrl,
+    status,
+    currentJobTitle,
+    currentOrganization,
+    registrationNo,
+    interests,
+    expertin,
+    profilePicture,
+  } = req.body;
 
-    let imageData;
+  let imageData;
 
-    if (req.file) {
-      imageData = await uploadSingleImage(req.file);
-    } else if (profilePicture !== 'null') {
-      imageData = profilePicture;
-    } else if (profilePicture === 'null') {
-      imageData = null;
-    }
+  if (req.file) {
+    imageData = await uploadSingleImage(req.file);
+  } else if (profilePicture !== 'null') {
+    imageData = profilePicture;
+  } else if (profilePicture === 'null') {
+    imageData = null;
+  }
 
-    if (userId === req.user.id) {
-      const userUpdate = await User.findByIdAndUpdate(
-        userId,
-        {
-          firstName,
-          lastName,
-          batch,
-          departmentLong,
-          departmentShort,
-          homeDistrict,
-          presentDistrict,
-          currentlyLiveIn,
-          gender,
-          bloodGroup,
-          email,
-          phoneNo,
-          linkedinProfileUrl,
-          facebookProfileUrl,
-          status,
-          currentJobTitle,
-          currentOrganization,
-          registrationNo,
-          interests,
-          expertin,
-          profilePicture: imageData,
-        },
-        { new: true }
-      ).select('-password -__v');
+  if (userId === req.user.id) {
+    const userUpdate = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName,
+        lastName,
+        batch,
+        departmentLong,
+        departmentShort,
+        homeDistrict,
+        presentDistrict,
+        currentlyLiveIn,
+        gender,
+        bloodGroup,
+        email,
+        phoneNo,
+        linkedinProfileUrl,
+        facebookProfileUrl,
+        status,
+        currentJobTitle,
+        currentOrganization,
+        registrationNo,
+        interests: interests?.split(',').map((item) => item.trim()),
+        expertin: expertin?.split(',').map((item) => item.trim()),
+        profilePicture: imageData,
+      },
+      { new: true }
+    ).select('-password -__v');
 
-      res
-        .status(201)
-        .json({ message: 'User update successful', userUpdate: userUpdate });
-    } else {
-      const error = createError(400, 'User update failed');
-      next(error);
-    }
-  } catch (err) {
+    res
+      .status(201)
+      .json({ message: 'User update successful', userUpdate: userUpdate });
+  } else {
     const error = createError(400, 'User update failed');
     next(error);
   }
+  // } catch (err) {
+  //   const error = createError(400, 'User update failed');
+  //   next(error);
+  // }
 };
 
 /*
