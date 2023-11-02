@@ -20,7 +20,7 @@ const galleryImageSchema = mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,

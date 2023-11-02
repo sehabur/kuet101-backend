@@ -2,9 +2,11 @@ const createError = require('http-errors');
 const { validationResult } = require('express-validator');
 const url = require('url');
 const User = require('../models/userModel');
+const Post = require('../models/postModel');
+const GalleryImage = require('../models/galleryImageModel');
 
 /*
-  @api:       POST /api/admin/getUsers?approval={pending}&active={true}
+  @api:       GET /api/admin/getUsers?approval={pending}&active={true}
   @desc:      user login
   @access:    public
 */
@@ -67,7 +69,7 @@ const getDashboardData = async (req, res, next) => {
 };
 
 /*
-  @api:       POST /api/admin/getUsers?approval={pending}&active={true}
+  @api:       GET /api/admin/getUsers?approval={pending}&active={true}
   @desc:      user login
   @access:    public
 */
@@ -174,6 +176,122 @@ const updateUserStatus = async (req, res, next) => {
   }
 };
 
+/*
+  @api:       GET /api/admin/getPosts?active={true}
+  @desc:      user login
+  @access:    public
+*/
+const getPosts = async (req, res, next) => {
+  try {
+    const { active } = url.parse(req.url, true).query;
+
+    let query = {};
+
+    if (active) query.isActive = active;
+
+    const posts = await Post.find(query).sort({ createdAt: 'desc' }).populate({
+      path: 'user',
+      select: 'firstName lastName rollNo',
+    });
+
+    if (posts) {
+      res.status(200).json({ posts });
+    } else {
+      const error = createError(404, 'Post not found');
+      next(error);
+    }
+  } catch (err) {
+    const error = createError(500, 'Unknown Error');
+    next(error);
+  }
+};
+
+/*
+  @api:       PATCH /api/admin/updatePostActiveStatus
+  @desc:      update Post active status
+  @access:    private
+*/
+const updatePostActiveStatus = async (req, res, next) => {
+  try {
+    const { postId, isActive } = req.body;
+
+    const postActiveStatusUpdate = await Post.findByIdAndUpdate(
+      postId,
+      {
+        isActive,
+      },
+      { new: true }
+    ).select('-__v');
+
+    res.status(201).json({
+      message: 'Post active status update successful',
+      postActiveStatusUpdate,
+    });
+  } catch (err) {
+    const error = createError(500, 'Post active status update failed');
+    next(error);
+  }
+};
+
+/*
+  @api:       GET /api/admin/getGalleryImages?active={true}
+  @desc:      user login
+  @access:    public
+*/
+const getGalleryImages = async (req, res, next) => {
+  try {
+    const { active } = url.parse(req.url, true).query;
+
+    let query = {};
+
+    if (active) query.isActive = active;
+
+    const galleryImage = await GalleryImage.find(query)
+      .sort({ createdAt: 'desc' })
+      .populate({
+        path: 'uploadedBy',
+        select: 'firstName lastName rollNo',
+      });
+
+    if (galleryImage) {
+      res.status(200).json({ galleryImage });
+    } else {
+      const error = createError(404, 'Image not found');
+      next(error);
+    }
+  } catch (err) {
+    const error = createError(500, 'Unknown Error');
+    next(error);
+  }
+};
+
+/*
+  @api:       PATCH /api/admin/updateGalleryImageActiveStatus
+  @desc:      update Post active status
+  @access:    private
+*/
+const updateGalleryImageActiveStatus = async (req, res, next) => {
+  try {
+    const { imageId, isActive } = req.body;
+
+    const galleryImageActiveStatusUpdate = await GalleryImage.findByIdAndUpdate(
+      imageId,
+      {
+        isActive,
+      },
+      { new: true }
+    ).select('-__v');
+
+    res.status(201).json({
+      message: 'Gallery Image active status update successful',
+      galleryImageActiveStatusUpdate,
+    });
+  } catch (err) {
+    const error = createError(500, 'Gallery Image active status update failed');
+    next(error);
+  }
+};
+
 // Exports //
 module.exports = {
   getDashboardData,
@@ -181,4 +299,8 @@ module.exports = {
   getUserProfileById,
   updateUserStatus,
   getUserProfileByRoll,
+  getPosts,
+  updatePostActiveStatus,
+  getGalleryImages,
+  updateGalleryImageActiveStatus,
 };

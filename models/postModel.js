@@ -17,7 +17,7 @@ const postSchema = mongoose.Schema(
     ],
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

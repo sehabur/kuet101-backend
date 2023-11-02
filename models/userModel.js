@@ -50,6 +50,9 @@ const userSchema = mongoose.Schema(
       enum: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'],
       required: true,
     },
+    bloodDonationEnable: {
+      type: Boolean,
+    },
     email: {
       type: String,
       required: true,
