@@ -11,61 +11,61 @@ const GalleryImage = require('../models/galleryImageModel');
   @access:    public
 */
 const getDashboardData = async (req, res, next) => {
-  // try {
-  const users = await User.aggregate([
-    {
-      $facet: {
-        department: [
-          {
-            $group: {
-              _id: '$departmentShort',
-              count: { $sum: 1 },
+  try {
+    const users = await User.aggregate([
+      {
+        $facet: {
+          department: [
+            {
+              $group: {
+                _id: '$departmentShort',
+                count: { $sum: 1 },
+              },
             },
-          },
-          {
-            $sort: {
-              count: -1,
+            {
+              $sort: {
+                count: -1,
+              },
             },
-          },
-        ],
-        activeStatus: [
-          {
-            $group: {
-              _id: '$isActive',
-              count: { $sum: 1 },
+          ],
+          activeStatus: [
+            {
+              $group: {
+                _id: '$isActive',
+                count: { $sum: 1 },
+              },
             },
-          },
-        ],
-        approvalStatus: [
-          {
-            $group: {
-              _id: '$approvalStatus',
-              count: { $sum: 1 },
+          ],
+          approvalStatus: [
+            {
+              $group: {
+                _id: '$approvalStatus',
+                count: { $sum: 1 },
+              },
             },
-          },
-        ],
-        total: [
-          {
-            $group: {
-              _id: null,
-              count: { $sum: 1 },
+          ],
+          total: [
+            {
+              $group: {
+                _id: null,
+                count: { $sum: 1 },
+              },
             },
-          },
-        ],
+          ],
+        },
       },
-    },
-  ]);
+    ]);
 
-  if (users) {
-    res.status(200).json({ users });
-  } else {
-    const error = createError(404, 'Users not found');
+    if (users) {
+      res.status(200).json({ users });
+    } else {
+      const error = createError(404, 'Users not found');
+      next(error);
+    }
+  } catch (err) {
+    const error = createError(500, 'Unknown Error');
     next(error);
   }
-  // } catch (err) {
-  //   const error = createError(500, 'Unknown Error');
-  //   next(error);
-  // }
 };
 
 /*

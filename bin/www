@@ -18,15 +18,15 @@ app.set('port', port);
 /**
  * Get certificates
  */
-let privateKey, certificate, ca;
-// try {
-privateKey = fs.readFileSync(
-  '/etc/letsencrypt/live/kuetianshub.com/privkey.pem'
-);
-certificate = fs.readFileSync(
-  '/etc/letsencrypt/live/kuetianshub.com/fullchain.pem'
-);
-// } catch (error) {}
+let privateKey, certificate;
+try {
+  privateKey = fs.readFileSync(
+    '/etc/letsencrypt/live/kuetianshub.com/privkey.pem'
+  );
+  certificate = fs.readFileSync(
+    '/etc/letsencrypt/live/kuetianshub.com/fullchain.pem'
+  );
+} catch (error) {}
 
 const credentials = {
   key: privateKey,

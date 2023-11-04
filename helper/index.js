@@ -16,7 +16,7 @@ const sendMailToUser = async (mailFrom, mailTo, mailBody, subject) => {
   try {
     return await transporter.sendMail({
       from: {
-        name: 'Boiexchange',
+        name: 'Kuetainshub',
         address: mailFrom,
       },
       to: mailTo,

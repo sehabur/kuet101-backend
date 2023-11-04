@@ -227,19 +227,24 @@ const register = async (req, res, next) => {
   @access:    public
 */
 const getAllInterests = async (req, res, next) => {
-  const interest = await User.aggregate([
-    { $project: { items: { $concatArrays: ['$interests', '$expertin'] } } },
-  ]);
+  try {
+    const interest = await User.aggregate([
+      { $project: { items: { $concatArrays: ['$interests', '$expertin'] } } },
+    ]);
 
-  let interestList = [];
+    let interestList = [];
 
-  for (let item of interest) {
-    item?.items?.forEach((val) => val !== '' && interestList.push(val));
+    for (let item of interest) {
+      item?.items?.forEach((val) => val !== '' && interestList.push(val));
+    }
+
+    const finalData = [...new Set(interestList)];
+
+    res.status(200).json(finalData);
+  } catch (error) {
+    const err = createError(500, 'Error Occured');
+    next(err);
   }
-
-  const finalData = [...new Set(interestList)];
-
-  res.status(200).json(finalData);
 };
 
 /*

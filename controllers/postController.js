@@ -114,42 +114,47 @@ const createPost = async (req, res, next) => {
   @access:    private
 */
 const editPost = async (req, res, next) => {
-  const errors = validationResult(req);
+  try {
+    const errors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    return res.status(400).json(errors);
-  }
-  const { title, description, image: imageStringArray = [] } = req.body;
+    if (!errors.isEmpty()) {
+      return res.status(400).json(errors);
+    }
+    const { title, description, image: imageStringArray = [] } = req.body;
 
-  const uploadedImagesArray = req?.files
-    ? await uploadMultipleImage(req.files)
-    : null;
+    const uploadedImagesArray = req?.files
+      ? await uploadMultipleImage(req.files)
+      : null;
 
-  const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id);
 
-  if (post) {
-    if (post.user.toString() === req.user.id) {
-      const updatedPost = await post
-        .updateOne({
-          title,
-          description,
-          images: [...imageStringArray, ...uploadedImagesArray],
-        })
-        .exec();
+    if (post) {
+      if (post.user.toString() === req.user.id) {
+        const updatedPost = await post
+          .updateOne({
+            title,
+            description,
+            images: [...imageStringArray, ...uploadedImagesArray],
+          })
+          .exec();
 
-      res.status(201).json({
-        message: 'Post edited successfuly',
-        updatedPost,
-      });
+        res.status(201).json({
+          message: 'Post edited successfuly',
+          updatedPost,
+        });
+      } else {
+        res.status(401).json({
+          message: 'Post edit failed',
+        });
+      }
     } else {
-      res.status(401).json({
-        message: 'Post edit failed',
+      res.status(400).json({
+        message: 'Post edit failed as post not found',
       });
     }
-  } else {
-    res.status(400).json({
-      message: 'Post edit failed as post not found',
-    });
+  } catch (error) {
+    const err = createError(500, 'Error Occured');
+    next(err);
   }
 };
 
