@@ -23,7 +23,9 @@ let privateKey, certificate, ca;
 privateKey = fs.readFileSync(
   '/etc/letsencrypt/live/kuetianshub.com/privkey.pem'
 );
-certificate = fs.readFileSync('/etc/letsencrypt/live/kuetianshub.com/cert.pem');
+certificate = fs.readFileSync(
+  '/etc/letsencrypt/live/kuetianshub.com/fullchain.pem'
+);
 // } catch (error) {}
 
 const credentials = {
