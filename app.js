@@ -12,7 +12,7 @@ const {
   ErrorHanlder,
 } = require('./middlewares/errorHandlingMiddleware');
 
-dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
+dotenv.config({ path: `.env.${process.env.NODE_ENV || 'production'}` });
 
 var app = express();
 
