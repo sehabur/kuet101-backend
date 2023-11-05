@@ -10,6 +10,11 @@ const MIME_TYPE_MAP = {
   'image/png': 'png',
 };
 
+const credentials = new AWS.SharedIniFileCredentials();
+AWS.config.credentials = credentials;
+
+console.log(credentials);
+
 const bucketName = 'kuetianshub-bucket';
 
 const fileUpload = multer({
