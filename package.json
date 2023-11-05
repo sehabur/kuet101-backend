@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "export NODE_ENV=production && node ./bin/www",
-    "stage": "SET NODE_ENV=staging& node ./bin/www",
+    "stage": "export NODE_ENV=staging && node ./bin/www",
     "dev": "SET NODE_ENV=development& nodemon ./bin/www"
   },
   "engines": {

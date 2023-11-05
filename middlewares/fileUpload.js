@@ -11,14 +11,6 @@ const MIME_TYPE_MAP = {
 };
 
 const bucketName = 'kuetianshub-bucket';
-const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-
-console.log('from env', process.env.AWS_SECRET_ACCESS_KEY);
-var credentials = new AWS.SharedIniFileCredentials();
-AWS.config.credentials = credentials;
-
-console.log('from file', credentials);
 
 const fileUpload = multer({
   storage: multer.memoryStorage(),
@@ -26,13 +18,9 @@ const fileUpload = multer({
 });
 
 const initilizeAwsS3 = () => {
-  var credentials = new AWS.SharedIniFileCredentials();
+  const credentials = new AWS.SharedIniFileCredentials();
   AWS.config.credentials = credentials;
-  // AWS.config.update({
-  //   apiVersion: 'latest',
-  //   accessKeyId,
-  //   secretAccessKey,
-  // });
+
   return new AWS.S3();
 };
 
