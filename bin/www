@@ -48,7 +48,7 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('Mongodb connected'))
+  .then(() => console.log('Mongodb cluster connected'))
   .catch((err) => console.log(err));
 
 /**

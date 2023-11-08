@@ -120,11 +120,9 @@ const login = async (req, res, next) => {
 const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       return res.status(400).json(errors);
     }
-
     const {
       firstName,
       lastName,
@@ -441,18 +439,78 @@ const getUsersByQuery = async (req, res, next) => {
       users = await User.aggregate([
         {
           $match: {
-            _id: { $ne: req.user.id },
+            $expr: {
+              $ne: [
+                '$_id',
+                {
+                  $toObjectId: req.user.id,
+                },
+              ],
+            },
             isActive: true,
             ...secondaryFilter,
           },
         },
+        // {
+        //   $addFields: {
+        //     returnObject: {
+        //       $regexFind: {
+        //         input: '$currentOrganization',
+        //         regex: /\(|\)|pcb/i,
+        //       },
+        //     },
+        //   },
+        // },
+        // {
+        //   $match: {
+        //     $expr: {
+        //       $gt: [{ $size: '$returnObject' }, 0],
+        //     },
+        //   },
+        // },
+        // {
+        //   $project: {
+        //     newName: {
+        //       $replaceAll: {
+        //         input: '$currentOrganization',
+        //         find: '$returnObject.match',
+        //         replacement: '',
+        //       },
+        //     },
+        //   },
+        // },
+        // {
+        //   $match: {
+        //     regexResObject: {
+        //     },
+        //   },
+        // },
+
+        // {
+        //   $addFields: {
+        //     newName: {
+        //       $function: {
+        //         body: function (name) {
+        //           return name.replace(/\(|\)/, '');
+        //         },
+        //         args: ['$currentOrganization'],
+        //         lang: 'js',
+        //       },
+        //     },
+        //   },
+        // },
         {
           $addFields: {
             wordMatchCount: {
               $size: {
                 $setIntersection: [
                   {
-                    $split: [{ $toLower: '$currentOrganization' }, ' '],
+                    $split: [
+                      {
+                        $toLower: '$currentOrganization',
+                      },
+                      ' ',
+                    ],
                   },
                   currentOrgKeywords,
                 ],
@@ -643,10 +701,10 @@ const resetPasswordLink = async (req, res, next) => {
 
       const verificationLink = `${process.env.FRONT_END_URL}/manage-password/set-new?user=${user._id}&resetToken=${resetToken}`;
 
-      const mailBody = `<html><body><h2>Reset your password </h2><p>Click on the below link to reset your password</p><a href=${verificationLink} target="_blank">Reset Password</a><br/><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:support@boiexchange.com">support@boiexchange.com</a></p></body></html>`;
+      const mailBody = `<html><body><h2>Reset your password </h2><p>Click on the below link to reset your password</p><a href=${verificationLink} target="_blank">Reset Password</a><br/><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
       const mailSendResponse = await sendMailToUser(
-        'noreply@boiexchange.com',
+        'kuetianshub@gmail.com',
         user.email,
         mailBody,
         'Reset your password'
