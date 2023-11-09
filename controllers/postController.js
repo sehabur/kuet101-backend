@@ -213,7 +213,7 @@ const getLearningFileStructure = async (req, res, next) => {
 
     const fileObjects = await s3
       .listObjectsV2({
-        Bucket: 'kuetianshub',
+        Bucket: 'kuetianshub-bucket',
         Prefix: `files/${category}/`,
       })
       .promise();

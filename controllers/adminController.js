@@ -95,7 +95,6 @@ const getUsers = async (req, res, next) => {
     if (approval) query.approvalStatus = approval;
     if (active) query.isActive = active;
 
-    console.log(query);
     const users = await User.find(query)
       .select('firstName lastName rollNo isActive approvalStatus')
       .sort({ createdAt: 'desc' });
