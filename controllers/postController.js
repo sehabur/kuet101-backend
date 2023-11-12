@@ -211,14 +211,27 @@ const getLearningFileStructure = async (req, res, next) => {
 
     const s3 = initilizeAwsS3();
 
-    const fileObjects = await s3
-      .listObjectsV2({
-        Bucket: 'kuetianshub-bucket',
-        Prefix: `files/${category}/`,
-      })
-      .promise();
+    const params = {
+      Bucket: 'kuetianshub-bucket',
+      Prefix: `files/${category}/`,
+    };
 
-    const data = fileObjects.Contents.map((content) => {
+    let allKeys = [];
+
+    const getAllObjects = async (params) => {
+      const fileObjects = await s3.listObjectsV2(params).promise();
+
+      allKeys.push(...fileObjects.Contents);
+
+      if (fileObjects.IsTruncated) {
+        params.ContinuationToken = fileObjects.NextContinuationToken;
+        await getAllObjects(params);
+      }
+    };
+
+    await getAllObjects(params);
+
+    const data = allKeys.map((content) => {
       return content.Key.split('/').slice(2);
     });
 
