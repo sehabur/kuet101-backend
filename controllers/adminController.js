@@ -4,6 +4,7 @@ const url = require('url');
 const User = require('../models/userModel');
 const Post = require('../models/postModel');
 const GalleryImage = require('../models/galleryImageModel');
+const { sendMailToUser } = require('../helper');
 
 /*
   @api:       GET /api/admin/getUsers?approval={pending}&active={true}
@@ -167,7 +168,7 @@ const updateUserStatus = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json(errors);
     }
-    const { userId, approvalStatus, isActive } = req.body;
+    const { userId, approvalStatus, isActive, userEmail, userName } = req.body;
 
     const userUpdate = await User.findByIdAndUpdate(
       userId,
@@ -178,6 +179,17 @@ const updateUserStatus = async (req, res, next) => {
       },
       { new: true }
     ).select('-password -__v');
+
+    if (approvalStatus === 'approved') {
+      const mailBody = `<html><body><h3>Hello ${userName},</h3><h2>Welcome to Kuetianshub</h2><p><h3>We have verified your account. Please <a href=${process.env.FRONT_END_URL}/signin target="_blank">login</a> now.</h3></p><br/><p><h4>If you have any query or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></h4></p></body></html>`;
+
+      const mailSendResponse = await sendMailToUser(
+        'kuetianshub@gmail.com',
+        userEmail,
+        mailBody,
+        'Your account is now verified'
+      );
+    }
 
     res
       .status(201)

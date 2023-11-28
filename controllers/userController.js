@@ -531,7 +531,7 @@ const getUsersByQuery = async (req, res, next) => {
             createdAt: -1,
           },
         },
-        { $limit: 30 },
+        { $limit: 100 },
       ]);
     } else {
       users = await User.find({
@@ -541,7 +541,7 @@ const getUsersByQuery = async (req, res, next) => {
       })
         .select({ __v: 0, password: 0 })
         .sort({ createdAt: 'desc' })
-        .limit(30);
+        .limit(100);
     }
 
     if (users) {
@@ -572,6 +572,7 @@ const updateUserProfile = async (req, res, next) => {
     const {
       firstName,
       lastName,
+      rollNo,
       batch,
       departmentLong,
       departmentShort,
@@ -610,6 +611,7 @@ const updateUserProfile = async (req, res, next) => {
         {
           firstName,
           lastName,
+          rollNo,
           batch,
           departmentLong,
           departmentShort,
