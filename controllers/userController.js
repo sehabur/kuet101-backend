@@ -451,54 +451,28 @@ const getUsersByQuery = async (req, res, next) => {
             ...secondaryFilter,
           },
         },
-        // {
-        //   $addFields: {
-        //     returnObject: {
-        //       $regexFind: {
-        //         input: '$currentOrganization',
-        //         regex: /\(|\)|pcb/i,
-        //       },
-        //     },
-        //   },
-        // },
-        // {
-        //   $match: {
-        //     $expr: {
-        //       $gt: [{ $size: '$returnObject' }, 0],
-        //     },
-        //   },
-        // },
-        // {
-        //   $project: {
-        //     newName: {
-        //       $replaceAll: {
-        //         input: '$currentOrganization',
-        //         find: '$returnObject.match',
-        //         replacement: '',
-        //       },
-        //     },
-        //   },
-        // },
-        // {
-        //   $match: {
-        //     regexResObject: {
-        //     },
-        //   },
-        // },
-
-        // {
-        //   $addFields: {
-        //     newName: {
-        //       $function: {
-        //         body: function (name) {
-        //           return name.replace(/\(|\)/, '');
-        //         },
-        //         args: ['$currentOrganization'],
-        //         lang: 'js',
-        //       },
-        //     },
-        //   },
-        // },
+        {
+          $addFields: {
+            currOrgEdit1: {
+              $replaceAll: {
+                input: '$currentOrganization',
+                find: '(',
+                replacement: '',
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            currOrgEdit2: {
+              $replaceAll: {
+                input: '$currOrgEdit1',
+                find: ')',
+                replacement: '',
+              },
+            },
+          },
+        },
         {
           $addFields: {
             wordMatchCount: {
@@ -507,7 +481,7 @@ const getUsersByQuery = async (req, res, next) => {
                   {
                     $split: [
                       {
-                        $toLower: '$currentOrganization',
+                        $toLower: '$currOrgEdit2',
                       },
                       ' ',
                     ],
@@ -529,6 +503,12 @@ const getUsersByQuery = async (req, res, next) => {
           $sort: {
             wordMatchCount: -1,
             createdAt: -1,
+          },
+        },
+        {
+          $project: {
+            currOrgEdit2: 0,
+            currOrgEdit1: 0,
           },
         },
         { $limit: 100 },
