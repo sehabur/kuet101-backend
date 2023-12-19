@@ -8,6 +8,7 @@ const axios = require('axios');
 const User = require('../models/userModel');
 const { uploadSingleImage } = require('../middlewares/fileUpload');
 const { sendMailToUser } = require('../helper');
+const Setting = require('../models/settingModel');
 
 // const cheerio = require('cheerio');
 // const scrapedin = require('scrapedin');
@@ -169,11 +170,16 @@ const register = async (req, res, next) => {
         const profilePicture = req?.file
           ? await uploadSingleImage(req.file)
           : null;
+
+        const setting = await Setting.findOne().select(
+          'userVerificationEnabled'
+        );
+        const userVerificationEnabled = setting.userVerificationEnabled;
+
         const newUser = await User.create({
           firstName,
           lastName,
           rollNo,
-          batch,
           departmentLong,
           departmentShort,
           homeDistrict,
@@ -195,7 +201,9 @@ const register = async (req, res, next) => {
           interests: interests?.split(',').map((item) => item.trim()),
           expertin: expertin?.split(',').map((item) => item.trim()),
           selfReferralCode,
-          approvalStatus: 'pending',
+          approvalStatus: userVerificationEnabled ? 'pending' : 'approved',
+          isActive: userVerificationEnabled ? false : true,
+          isVerified: userVerificationEnabled ? false : true,
         });
 
         res.status(201).json({

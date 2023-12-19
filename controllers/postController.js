@@ -88,13 +88,14 @@ const createPost = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json(errors);
     }
-    const { title, description } = req.body;
+    const { title, description, category } = req.body;
 
     const images = req?.files ? await uploadMultipleImage(req.files) : null;
 
     const newPost = new Post({
       title,
       description,
+      category,
       images,
       user: req.user.id,
     });
@@ -281,20 +282,39 @@ const getLearningFileStructure = async (req, res, next) => {
 */
 const getGalleryImages = async (req, res, next) => {
   try {
-    const { batch, dept: department, limit } = url.parse(req.url, true).query;
-
-    const images = await GalleryImage.find({
+    const {
       batch,
-      department,
-      isActive: true,
-    })
-      .select({ __v: 0 })
-      .populate(
-        'uploadedBy',
-        '-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v'
-      )
-      .sort({ createdAt: 'desc' })
-      .limit(limit);
+      dept: department,
+      selectall,
+      limit,
+    } = url.parse(req.url, true).query;
+
+    let images;
+    if (selectall == 1) {
+      images = await GalleryImage.find({
+        isActive: true,
+      })
+        .select({ __v: 0 })
+        .populate(
+          'uploadedBy',
+          '-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v'
+        )
+        .sort({ createdAt: 'desc' })
+        .limit(limit);
+    } else {
+      images = await GalleryImage.find({
+        batch,
+        department,
+        isActive: true,
+      })
+        .select({ __v: 0 })
+        .populate(
+          'uploadedBy',
+          '-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v'
+        )
+        .sort({ createdAt: 'desc' })
+        .limit(limit);
+    }
 
     if (images) {
       res.json({ images });

@@ -15,6 +15,11 @@ const postSchema = mongoose.Schema(
         type: String,
       },
     ],
+    category: {
+      type: String,
+      enum: ['vacancy', 'jobSeek', 'info', 'knowledgeShare', 'other'],
+      required: true,
+    },
     isActive: {
       type: Boolean,
       default: false,

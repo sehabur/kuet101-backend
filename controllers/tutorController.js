@@ -42,19 +42,33 @@ const findTutor = async (req, res, next) => {
   try {
     const { district } = url.parse(req.url, true).query;
 
-    console.log(district);
-    const tutors = await Tutor.find({
-      userProfile: { $ne: req.user.id },
-      district,
-      isActive: true,
-    })
-      .select('-__v')
-      .populate({
-        path: 'userProfile',
-        select: '-password -__v',
+    let tutors;
+    if (district === 'all') {
+      tutors = await Tutor.find({
+        userProfile: { $ne: req.user.id },
+        isActive: true,
       })
-      .sort({ createdAt: 'desc' })
-      .limit(20);
+        .select('-__v')
+        .populate({
+          path: 'userProfile',
+          select: '-password -__v',
+        })
+        .sort({ createdAt: 'desc' })
+        .limit(40);
+    } else {
+      tutors = await Tutor.find({
+        userProfile: { $ne: req.user.id },
+        district,
+        isActive: true,
+      })
+        .select('-__v')
+        .populate({
+          path: 'userProfile',
+          select: '-password -__v',
+        })
+        .sort({ createdAt: 'desc' })
+        .limit(40);
+    }
 
     if (tutors) {
       res.json({ tutors });

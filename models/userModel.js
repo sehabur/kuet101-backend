@@ -102,7 +102,7 @@ const userSchema = mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: false,
+      required: false,
     },
     approvalStatus: {
       type: String,
@@ -119,7 +119,7 @@ const userSchema = mongoose.Schema(
     },
     isVerified: {
       type: Boolean,
-      default: false,
+      required: true,
     },
     resetToken: {
       type: String,
