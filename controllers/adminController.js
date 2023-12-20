@@ -97,7 +97,7 @@ const getUsers = async (req, res, next) => {
     if (active) query.isActive = active;
 
     const users = await User.find(query)
-      .select('firstName lastName rollNo isActive approvalStatus')
+      .select('firstName lastName rollNo isActive approvalStatus createdAt')
       .sort({ createdAt: 'desc' });
 
     if (users) {
