@@ -180,6 +180,7 @@ const register = async (req, res, next) => {
           firstName,
           lastName,
           rollNo,
+          batch,
           departmentLong,
           departmentShort,
           homeDistrict,
