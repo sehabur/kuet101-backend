@@ -239,7 +239,7 @@ const updatePostActiveStatus = async (req, res, next) => {
   try {
     const { postId, isActive } = req.body;
 
-    const postActiveStatusUpdate = await Post.findByIdAndUpdate(
+    const postActiveStatusUpdated = await Post.findByIdAndUpdate(
       postId,
       {
         isActive,
@@ -247,9 +247,50 @@ const updatePostActiveStatus = async (req, res, next) => {
       { new: true }
     ).select('-__v');
 
+    if (
+      postActiveStatusUpdated.category === 'vacancy' &&
+      postActiveStatusUpdated.isActive === true
+    ) {
+      // console.log(postActiveStatusUpdated);
+
+      const users = await User.find({
+        status: 'seekingJob',
+      }).select('firstName lastName departmentShort email');
+
+      users.push(
+        {
+          firstName: 'Sehabur',
+          lastName: 'Rahman',
+          email: 'sehabur@gmail.com',
+        },
+        {
+          firstName: 'Saikat',
+          lastName: 'Das',
+          email: 'saikatdasnirob@gmail.com',
+        }
+      );
+
+      // const users = await User.find({
+      //   rollNo: { $in: ['1003114', '0903042'] },
+      // }).select('firstName lastName departmentShort email');
+
+      // console.log(users);
+
+      for (let user of users) {
+        const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
+
+        await sendMailToUser(
+          'kuetianshub@gmail.com',
+          user.email,
+          mailBody,
+          'New job vacancy post at Kuetianshub'
+        );
+      }
+    }
+
     res.status(201).json({
       message: 'Post active status update successful',
-      postActiveStatusUpdate,
+      postActiveStatusUpdated,
     });
   } catch (err) {
     const error = createError(500, 'Post active status update failed');

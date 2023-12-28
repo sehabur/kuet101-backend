@@ -10,6 +10,7 @@ const {
   updateUserProfile,
   getFindYourMatesData,
   getUsersByQuery,
+  getEmailList,
   webScrapper,
   changePassword,
   resetPasswordLink,
@@ -60,6 +61,8 @@ router.route('/getAllInterests').get(getAllInterests);
 router.route('/findYourMates').get(checkLogin, getFindYourMatesData);
 
 router.route('/getUsersByQuery').get(checkLogin, getUsersByQuery);
+
+router.route('/getEmailList').get(checkLogin, getEmailList);
 
 router
   .route('/enrollForTutor')

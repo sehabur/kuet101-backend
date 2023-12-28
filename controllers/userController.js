@@ -179,7 +179,7 @@ const register = async (req, res, next) => {
         const newUser = await User.create({
           firstName,
           lastName,
-          rollNo,
+          rollNo: rollNo.trim(),
           batch,
           departmentLong,
           departmentShort,
@@ -248,6 +248,29 @@ const getAllInterests = async (req, res, next) => {
     const finalData = [...new Set(interestList)];
 
     res.status(200).json(finalData);
+  } catch (error) {
+    const err = createError(500, 'Error Occured');
+    next(err);
+  }
+};
+
+/*
+  @api:       GET /api/users/getEmailList?status={runningStudent}
+  @desc:      get all interests
+  @access:    public
+*/
+const getEmailList = async (req, res, next) => {
+  try {
+    const { status } = url.parse(req.url, true).query;
+
+    const email = await User.find({
+      status,
+    })
+      .select('firstName lastName departmentShort email')
+      .sort({ createdAt: 'desc' })
+      .limit(limit);
+
+    res.status(200).json(email);
   } catch (error) {
     const err = createError(500, 'Error Occured');
     next(err);
@@ -883,6 +906,7 @@ module.exports = {
   getUserProfileById,
   updateUserProfile,
   getUsersByQuery,
+  getEmailList,
   changePassword,
   resetPasswordLink,
   setNewPassword,

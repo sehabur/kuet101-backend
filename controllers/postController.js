@@ -10,6 +10,7 @@ const {
   deleteMultipleImage,
 } = require('../middlewares/fileUpload');
 const GalleryImage = require('../models/galleryImageModel');
+const User = require('../models/userModel');
 
 /*
   @api:       GET /api/posts?user={user}&limit={limit}
@@ -100,6 +101,7 @@ const createPost = async (req, res, next) => {
       user: req.user.id,
     });
     const createdNewPost = await newPost.save();
+
     res
       .status(201)
       .json({ message: 'Post created successfully', post: createdNewPost });
