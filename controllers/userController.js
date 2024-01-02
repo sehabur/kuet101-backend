@@ -177,8 +177,8 @@ const register = async (req, res, next) => {
         const userVerificationEnabled = setting.userVerificationEnabled;
 
         const newUser = await User.create({
-          firstName,
-          lastName,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
           rollNo: rollNo.trim(),
           batch,
           departmentLong,
@@ -189,7 +189,7 @@ const register = async (req, res, next) => {
           gender,
           bloodGroup,
           bloodDonationEnable,
-          email,
+          email: email.trim(),
           phoneNo,
           profilePicture,
           linkedinProfileUrl,
