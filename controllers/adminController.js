@@ -5,6 +5,7 @@ const User = require('../models/userModel');
 const Post = require('../models/postModel');
 const GalleryImage = require('../models/galleryImageModel');
 const { sendMailToUser } = require('../helper');
+const Tutor = require('../models/tutorModel');
 
 /*
   @api:       GET /api/admin/getUsers?approval={pending}&active={true}
@@ -12,74 +13,99 @@ const { sendMailToUser } = require('../helper');
   @access:    public
 */
 const getDashboardData = async (req, res, next) => {
-  try {
-    const users = await User.aggregate([
-      {
-        $facet: {
-          department: [
-            {
-              $group: {
-                _id: '$departmentShort',
-                count: { $sum: 1 },
-              },
+  // try {
+  const users = await User.aggregate([
+    {
+      $facet: {
+        department: [
+          {
+            $group: {
+              _id: '$departmentShort',
+              count: { $sum: 1 },
             },
-            {
-              $sort: {
-                count: -1,
-              },
+          },
+          {
+            $sort: {
+              count: -1,
             },
-          ],
-          batch: [
-            {
-              $group: {
-                _id: '$batch',
-                count: { $sum: 1 },
-              },
+          },
+        ],
+        batch: [
+          {
+            $group: {
+              _id: '$batch',
+              count: { $sum: 1 },
             },
-            {
-              $sort: {
-                _id: 1,
-              },
+          },
+          {
+            $sort: {
+              _id: 1,
             },
-          ],
-          activeStatus: [
-            {
-              $group: {
-                _id: '$isActive',
-                count: { $sum: 1 },
-              },
+          },
+        ],
+        activeStatus: [
+          {
+            $group: {
+              _id: '$isActive',
+              count: { $sum: 1 },
             },
-          ],
-          approvalStatus: [
-            {
-              $group: {
-                _id: '$approvalStatus',
-                count: { $sum: 1 },
-              },
+          },
+        ],
+        approvalStatus: [
+          {
+            $group: {
+              _id: '$approvalStatus',
+              count: { $sum: 1 },
             },
-          ],
-          total: [
-            {
-              $group: {
-                _id: null,
-                count: { $sum: 1 },
-              },
+          },
+        ],
+        total: [
+          {
+            $group: {
+              _id: null,
+              count: { $sum: 1 },
             },
-          ],
-        },
+          },
+        ],
       },
-    ]);
+    },
+  ]);
 
-    if (users) {
-      res.status(200).json({ users });
-    } else {
-      const error = createError(404, 'Users not found');
-      next(error);
-    }
-  } catch (err) {
-    const error = createError(500, 'Unknown Error');
+  const posts = await Post.aggregate([
+    {
+      $group: {
+        _id: '$isActive',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  const tution = await Tutor.aggregate([
+    {
+      $group: {
+        _id: '$isActive',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  const gallery = await GalleryImage.aggregate([
+    {
+      $group: {
+        _id: '$isActive',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  if (users) {
+    res.status(200).json({ users, posts, tution, gallery });
+  } else {
+    const error = createError(404, 'Users not found');
     next(error);
   }
+  // } catch (err) {
+  //   const error = createError(500, 'Unknown Error');
+  //   next(error);
+  // }
 };
 
 /*
@@ -237,7 +263,7 @@ const getPosts = async (req, res, next) => {
 */
 const updatePostActiveStatus = async (req, res, next) => {
   try {
-    const { postId, isActive } = req.body;
+    const { postId, isActive, sendMailSelection, mailReceivers } = req.body;
 
     const postActiveStatusUpdated = await Post.findByIdAndUpdate(
       postId,
@@ -247,49 +273,43 @@ const updatePostActiveStatus = async (req, res, next) => {
       { new: true }
     ).select('-__v');
 
-    if (
-      postActiveStatusUpdated.category === 'vacancy' &&
-      postActiveStatusUpdated.isActive === true
-    ) {
-      // console.log(postActiveStatusUpdated);
+    let users = null;
 
-      const users = await User.find({
-        status: 'seekingJob',
-      }).select('firstName lastName departmentShort email');
-
-      users.push(
-        {
-          firstName: 'Sehabur',
-          lastName: 'Rahman',
-          email: 'sehabur@gmail.com',
-        },
-        {
-          firstName: 'Saikat',
-          lastName: 'Das',
-          email: 'saikatdasnirob@gmail.com',
-        }
+    if (sendMailSelection) {
+      users = await User.find(mailReceivers).select(
+        'firstName lastName departmentShort email'
       );
 
-      // const users = await User.find({
-      //   rollNo: { $in: ['1003114', '0903042'] },
-      // }).select('firstName lastName departmentShort email');
-
-      // console.log(users);
-
-      for (let user of users) {
-        const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
-
-        await sendMailToUser(
-          'kuetianshub@gmail.com',
-          user.email,
-          mailBody,
-          'New job vacancy post at Kuetianshub'
+      if (users.length > 0) {
+        users.push(
+          {
+            firstName: 'Sehabur',
+            lastName: 'Rahman',
+            email: 'sehabur@gmail.com',
+          },
+          {
+            firstName: 'Saikat',
+            lastName: 'Das',
+            email: 'saikatdasnirob@gmail.com',
+          }
         );
+
+        for (let user of users) {
+          const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
+
+          await sendMailToUser(
+            'kuetianshub@gmail.com',
+            user.email,
+            mailBody,
+            'New job vacancy post at Kuetianshub'
+          );
+        }
       }
     }
-
     res.status(201).json({
-      message: 'Post active status update successful',
+      message: `Post status update successful. Email sent to ${
+        users ? users.length : 0
+      } users`,
       postActiveStatusUpdated,
     });
   } catch (err) {
