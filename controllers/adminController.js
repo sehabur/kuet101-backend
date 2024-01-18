@@ -74,7 +74,7 @@ const getDashboardData = async (req, res, next) => {
   const posts = await Post.aggregate([
     {
       $group: {
-        _id: '$isActive',
+        _id: { $toString: '$isActive' },
         count: { $sum: 1 },
       },
     },
@@ -82,7 +82,7 @@ const getDashboardData = async (req, res, next) => {
   const tution = await Tutor.aggregate([
     {
       $group: {
-        _id: '$isActive',
+        _id: { $toString: '$isActive' },
         count: { $sum: 1 },
       },
     },
@@ -90,7 +90,7 @@ const getDashboardData = async (req, res, next) => {
   const gallery = await GalleryImage.aggregate([
     {
       $group: {
-        _id: '$isActive',
+        _id: { $toString: '$isActive' },
         count: { $sum: 1 },
       },
     },
@@ -280,6 +280,13 @@ const updatePostActiveStatus = async (req, res, next) => {
         'firstName lastName departmentShort email'
       );
 
+      res.status(201).json({
+        message: `Post status update successful. Email sent to ${
+          users ? users.length : 0
+        } users`,
+        postActiveStatusUpdated,
+      });
+
       if (users.length > 0) {
         users.push(
           {
@@ -295,7 +302,7 @@ const updatePostActiveStatus = async (req, res, next) => {
         );
 
         for (let user of users) {
-          const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
+          const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy post at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
           await sendMailToUser(
             'kuetianshub@gmail.com',
@@ -305,13 +312,12 @@ const updatePostActiveStatus = async (req, res, next) => {
           );
         }
       }
+    } else {
+      res.status(201).json({
+        message: `Post status update successful. No email sent`,
+        postActiveStatusUpdated,
+      });
     }
-    res.status(201).json({
-      message: `Post status update successful. Email sent to ${
-        users ? users.length : 0
-      } users`,
-      postActiveStatusUpdated,
-    });
   } catch (err) {
     const error = createError(500, 'Post active status update failed');
     next(error);

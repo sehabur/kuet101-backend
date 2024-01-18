@@ -236,18 +236,16 @@ const register = async (req, res, next) => {
 const getAllInterests = async (req, res, next) => {
   try {
     const interest = await User.aggregate([
-      { $project: { items: { $concatArrays: ['$interests', '$expertin'] } } },
+      { $project: { data: { $concatArrays: ['$interests', '$expertin'] } } },
     ]);
 
     let interestList = [];
 
     for (let item of interest) {
-      item?.items?.forEach((val) => val !== '' && interestList.push(val));
+      item?.data?.forEach((val) => val !== '' && interestList.push(val));
     }
-
-    const finalData = [...new Set(interestList)];
-
-    res.status(200).json(finalData);
+    // const finalData = [...new Set(interestList)];
+    res.status(200).json(interestList);
   } catch (error) {
     const err = createError(500, 'Error Occured');
     next(err);
@@ -438,7 +436,7 @@ const getUsersByQuery = async (req, res, next) => {
       if (key === 'name') {
         const nameKeywords = filterOptions[key]
           .split(' ')
-          .map((keyword) => new RegExp(keyword, 'i')); // split name into firstName and lastName //
+          .map((keyword) => new RegExp(`(^${keyword}|\\s${keyword})`, 'i')); // split name into firstName and lastName //
         secondaryFilter.$or = [
           { firstName: { $in: nameKeywords } },
           { lastName: { $in: nameKeywords } },
@@ -446,7 +444,7 @@ const getUsersByQuery = async (req, res, next) => {
       } else if (key === 'currentJobTitle') {
         const jobTitleKeywords = filterOptions[key]
           .split(' ')
-          .map((keyword) => new RegExp(keyword, 'i'));
+          .map((keyword) => new RegExp(`(^${keyword}|\\s${keyword})`, 'i'));
         secondaryFilter[key] = { $in: jobTitleKeywords };
       } else if (key === 'currentOrganization') {
         currentOrgKeywords = filterOptions[key].toLowerCase().split(' ');
