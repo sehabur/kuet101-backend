@@ -27,7 +27,14 @@ const enrollTutorValidationMiddleware = [
   body('area').notEmpty().withMessage('Please input area'),
 ];
 
+const enrollToletValidationMiddleware = [
+  body('district').notEmpty().withMessage('Please input district'),
+  body('area').notEmpty().withMessage('Please input area'),
+  body('type').notEmpty().withMessage('Please input type'),
+];
+
 module.exports = {
   registerValidationMiddleware,
   enrollTutorValidationMiddleware,
+  enrollToletValidationMiddleware,
 };
