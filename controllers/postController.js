@@ -1,16 +1,16 @@
-const createError = require('http-errors');
-const { validationResult } = require('express-validator');
-const url = require('url');
-const Post = require('../models/postModel');
+const createError = require("http-errors");
+const { validationResult } = require("express-validator");
+const url = require("url");
+const Post = require("../models/postModel");
 const {
   uploadSingleImage,
   uploadMultipleImage,
   fileDeleteAwsS3,
   initilizeAwsS3,
   deleteMultipleImage,
-} = require('../middlewares/fileUpload');
-const GalleryImage = require('../models/galleryImageModel');
-const User = require('../models/userModel');
+} = require("../middlewares/fileUpload");
+const GalleryImage = require("../models/galleryImageModel");
+const User = require("../models/userModel");
 
 /*
   @api:       GET /api/posts?user={user}&limit={limit}
@@ -25,12 +25,12 @@ const getPosts = async (req, res, next) => {
       isActive: true,
       user: { $ne: user },
     })
-      .sort({ createdAt: 'desc' })
+      .sort({ createdAt: "desc" })
       .limit(limit);
 
     res.status(200).json({ posts });
   } catch (err) {
-    const error = createError(500, 'No Posts Found');
+    const error = createError(500, "No Posts Found");
     next(error);
   }
 };
@@ -43,20 +43,20 @@ const getPosts = async (req, res, next) => {
 const getPostById = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id)
-      .select('-__v')
+      .select("-__v")
       .populate(
-        'user',
-        '-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v'
+        "user",
+        "-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v"
       );
 
     if (post) {
       res.status(200).json({ post });
     } else {
-      const error = createError(404, 'No Post Found');
+      const error = createError(404, "No Post Found");
       next(error);
     }
   } catch (err) {
-    const error = createError(500, 'No Post Found');
+    const error = createError(500, "No Post Found");
     next(error);
   }
 };
@@ -69,11 +69,11 @@ const getPostById = async (req, res, next) => {
 const getPostsByUser = async (req, res, next) => {
   try {
     const postsByUser = await Post.find({ user: req.params.id })
-      .select('-user -__v')
-      .sort({ updatedAt: 'desc' });
+      .select("-user -__v")
+      .sort({ updatedAt: "desc" });
     res.status(200).json({ postsByUser });
   } catch (err) {
-    const error = createError(500, 'No User/Post Found');
+    const error = createError(500, "No User/Post Found");
     next(error);
   }
 };
@@ -104,7 +104,7 @@ const createPost = async (req, res, next) => {
 
     res
       .status(201)
-      .json({ message: 'Post created successfully', post: createdNewPost });
+      .json({ message: "Post created successfully", post: createdNewPost });
   } catch (err) {
     const error = createError(500, err.message);
     next(error);
@@ -142,21 +142,21 @@ const editPost = async (req, res, next) => {
           .exec();
 
         res.status(201).json({
-          message: 'Post edited successfuly',
+          message: "Post edited successfuly",
           updatedPost,
         });
       } else {
         res.status(401).json({
-          message: 'Post edit failed',
+          message: "Post edit failed",
         });
       }
     } else {
       res.status(400).json({
-        message: 'Post edit failed as post not found',
+        message: "Post edit failed as post not found",
       });
     }
   } catch (error) {
-    const err = createError(500, 'Error Occured');
+    const err = createError(500, "Error Occured");
     next(err);
   }
 };
@@ -179,22 +179,22 @@ const deletePost = async (req, res, next) => {
           post.images && (await deleteMultipleImage(post.images));
 
           res.status(200).json({
-            message: 'Post deletion successful',
+            message: "Post deletion successful",
             postId,
           });
         } else {
           res.status(400).json({
-            message: 'Post deletion failed',
+            message: "Post deletion failed",
           });
         }
       } else {
         res.status(401).json({
-          message: 'Post deletion failed',
+          message: "Post deletion failed",
         });
       }
     } else {
       res.status(400).json({
-        message: 'Post delete failed as post not found',
+        message: "Post delete failed as post not found",
       });
     }
   } catch (err) {
@@ -215,7 +215,7 @@ const getLearningFileStructure = async (req, res, next) => {
     const s3 = initilizeAwsS3();
 
     const params = {
-      Bucket: 'kuetianshub-bucket',
+      Bucket: "kuetianshub-bucket",
       Prefix: `files/${category}/`,
     };
 
@@ -235,34 +235,34 @@ const getLearningFileStructure = async (req, res, next) => {
     await getAllObjects(params);
 
     const data = allKeys.map((content) => {
-      return content.Key.split('/').slice(2);
+      return content.Key.split("/").slice(2);
     });
 
-    const root = { type: 'root', contents: [] };
+    const root = { type: "root", contents: [] };
 
     data.forEach((item) => {
       let currentLevel = root.contents;
       item.forEach((name, index) => {
         const existingFolder = currentLevel.find(
-          (folder) => folder.name === name && folder.type === 'subFolder'
+          (folder) => folder.name === name && folder.type === "subFolder"
         );
 
         if (index === item.length - 1) {
           name &&
             currentLevel.push({
-              type: 'file',
+              type: "file",
               name,
               url: encodeURI(
                 `${
                   process.env.FRONTEND_CLOUD_IMAGE_URL
-                }/files/${category}/${item.join('/')}`
+                }/files/${category}/${item.join("/")}`
               ),
             });
         } else {
           if (existingFolder) {
             currentLevel = existingFolder.contents;
           } else {
-            const newFolder = { type: 'subFolder', name, contents: [] };
+            const newFolder = { type: "subFolder", name, contents: [] };
             currentLevel.push(newFolder);
             currentLevel = newFolder.contents;
           }
@@ -272,7 +272,7 @@ const getLearningFileStructure = async (req, res, next) => {
 
     res.status(200).json({ files: root.contents });
   } catch (err) {
-    const error = createError(500, 'Error occured');
+    const error = createError(500, "Error occured");
     next(error);
   }
 };
@@ -298,10 +298,10 @@ const getGalleryImages = async (req, res, next) => {
       })
         .select({ __v: 0 })
         .populate(
-          'uploadedBy',
-          '-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v'
+          "uploadedBy",
+          "-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v"
         )
-        .sort({ createdAt: 'desc' })
+        .sort({ createdAt: "desc" })
         .limit(limit);
     } else {
       images = await GalleryImage.find({
@@ -311,17 +311,17 @@ const getGalleryImages = async (req, res, next) => {
       })
         .select({ __v: 0 })
         .populate(
-          'uploadedBy',
-          '-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v'
+          "uploadedBy",
+          "-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v"
         )
-        .sort({ createdAt: 'desc' })
+        .sort({ createdAt: "desc" })
         .limit(limit);
     }
 
     if (images) {
       res.json({ images });
     } else {
-      const error = createError(404, 'No Images Found');
+      const error = createError(404, "No Images Found");
       next(error);
     }
 
@@ -345,7 +345,7 @@ const getGalleryImages = async (req, res, next) => {
     //   };
     // });
   } catch (err) {
-    const error = createError(500, 'Error occured');
+    const error = createError(500, "Error occured");
     next(error);
   }
 };
@@ -366,7 +366,7 @@ const addGalleryImages = async (req, res, next) => {
     const { title, batch, department } = req.body;
 
     const image = req?.file
-      ? await uploadSingleImage(req.file, 'gallery/')
+      ? await uploadSingleImage(req.file, "gallery/")
       : null;
 
     const newPost = new GalleryImage({
@@ -382,9 +382,9 @@ const addGalleryImages = async (req, res, next) => {
     if (createdNewPost) {
       res
         .status(201)
-        .json({ message: 'Post created successfully', post: createdNewPost });
+        .json({ message: "Post created successfully", post: createdNewPost });
     } else {
-      const error = createError(500, 'Error occured');
+      const error = createError(500, "Error occured");
       next(error);
     }
   } catch (err) {

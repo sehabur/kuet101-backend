@@ -32,6 +32,7 @@ const login = async (req, res, next) => {
       }
 
       result = await bcrypt.compare(password, user.password);
+
       if (result) {
         const {
           _id,
@@ -433,7 +434,9 @@ const getUsersByQuery = async (req, res, next) => {
     let currentOrgKeywords = [];
 
     for (key in filterOptions) {
-      if (key === "name") {
+      if (filterOptions[key] === "null") {
+        // do nothing //
+      } else if (key === "name") {
         const nameKeywords = filterOptions[key]
           .split(" ")
           .map((keyword) => new RegExp(`(^${keyword}|\\s${keyword})`, "i")); // split name into firstName and lastName //
@@ -448,9 +451,9 @@ const getUsersByQuery = async (req, res, next) => {
         secondaryFilter[key] = { $in: jobTitleKeywords };
       } else if (key === "currentOrganization") {
         currentOrgKeywords = filterOptions[key].toLowerCase().split(" ");
-      } else if (key === "presentDistrict") {
-        secondaryFilter[key] = {
-          $regex: `(^${filterOptions[key]}|\\s${filterOptions[key]})`,
+      } else if (key === "country") {
+        secondaryFilter["presentDistrict"] = {
+          $regex: filterOptions[key].split("(")[0],
           $options: "i",
         };
       } else if (key === "interests" || key === "expertin") {
@@ -464,7 +467,7 @@ const getUsersByQuery = async (req, res, next) => {
         secondaryFilter[key] = filterOptions[key];
       }
     }
-    // console.log(secondaryFilter);
+    console.log(secondaryFilter);
     let users;
 
     if (filterOptions.currentOrganization) {

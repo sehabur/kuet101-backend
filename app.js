@@ -7,6 +7,8 @@ const cors = require("cors");
 const userRoute = require("./routes/userRoute");
 const postRoute = require("./routes/postRoute");
 const adminRoute = require("./routes/adminRoute");
+const tryRoute = require("./routes/tryRoute");
+
 const {
   NotFoundHanlder,
   ErrorHanlder,
@@ -37,6 +39,7 @@ app.use((req, res, next) => {
 app.use("/api/users", userRoute);
 app.use("/api/posts", postRoute);
 app.use("/api/admin", adminRoute);
+app.use("/api/try", tryRoute);
 
 // Catch 404 and forward to NotFoundHanlder //
 app.use(NotFoundHanlder);

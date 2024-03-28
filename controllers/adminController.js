@@ -1,11 +1,11 @@
-const createError = require('http-errors');
-const { validationResult } = require('express-validator');
-const url = require('url');
-const User = require('../models/userModel');
-const Post = require('../models/postModel');
-const GalleryImage = require('../models/galleryImageModel');
-const { sendMailToUser } = require('../helper');
-const Tutor = require('../models/tutorModel');
+const createError = require("http-errors");
+const { validationResult } = require("express-validator");
+const url = require("url");
+const User = require("../models/userModel");
+const Post = require("../models/postModel");
+const GalleryImage = require("../models/galleryImageModel");
+const { sendMailToUser } = require("../helper");
+const Tutor = require("../models/tutorModel");
 
 /*
   @api:       GET /api/admin/getUsers?approval={pending}&active={true}
@@ -20,7 +20,7 @@ const getDashboardData = async (req, res, next) => {
         department: [
           {
             $group: {
-              _id: '$departmentShort',
+              _id: "$departmentShort",
               count: { $sum: 1 },
             },
           },
@@ -33,7 +33,7 @@ const getDashboardData = async (req, res, next) => {
         batch: [
           {
             $group: {
-              _id: '$batch',
+              _id: "$batch",
               count: { $sum: 1 },
             },
           },
@@ -46,7 +46,7 @@ const getDashboardData = async (req, res, next) => {
         activeStatus: [
           {
             $group: {
-              _id: '$isActive',
+              _id: "$isActive",
               count: { $sum: 1 },
             },
           },
@@ -54,7 +54,7 @@ const getDashboardData = async (req, res, next) => {
         approvalStatus: [
           {
             $group: {
-              _id: '$approvalStatus',
+              _id: "$approvalStatus",
               count: { $sum: 1 },
             },
           },
@@ -74,7 +74,7 @@ const getDashboardData = async (req, res, next) => {
   const posts = await Post.aggregate([
     {
       $group: {
-        _id: { $toString: '$isActive' },
+        _id: { $toString: "$isActive" },
         count: { $sum: 1 },
       },
     },
@@ -82,7 +82,7 @@ const getDashboardData = async (req, res, next) => {
   const tution = await Tutor.aggregate([
     {
       $group: {
-        _id: { $toString: '$isActive' },
+        _id: { $toString: "$isActive" },
         count: { $sum: 1 },
       },
     },
@@ -90,7 +90,7 @@ const getDashboardData = async (req, res, next) => {
   const gallery = await GalleryImage.aggregate([
     {
       $group: {
-        _id: { $toString: '$isActive' },
+        _id: { $toString: "$isActive" },
         count: { $sum: 1 },
       },
     },
@@ -99,7 +99,7 @@ const getDashboardData = async (req, res, next) => {
   if (users) {
     res.status(200).json({ users, posts, tution, gallery });
   } else {
-    const error = createError(404, 'Users not found');
+    const error = createError(404, "Users not found");
     next(error);
   }
   // } catch (err) {
@@ -123,17 +123,17 @@ const getUsers = async (req, res, next) => {
     if (active) query.isActive = active;
 
     const users = await User.find(query)
-      .select('firstName lastName rollNo isActive approvalStatus createdAt')
-      .sort({ createdAt: 'desc' });
+      .select("firstName lastName rollNo isActive approvalStatus createdAt")
+      .sort({ createdAt: "desc" });
 
     if (users) {
       res.status(200).json({ users });
     } else {
-      const error = createError(404, 'Users not found');
+      const error = createError(404, "Users not found");
       next(error);
     }
   } catch (err) {
-    const error = createError(500, 'Unknown Error');
+    const error = createError(500, "Unknown Error");
     next(error);
   }
 };
@@ -146,16 +146,16 @@ const getUsers = async (req, res, next) => {
 const getUserProfileById = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId).select('-password -__v');
+    const user = await User.findById(userId).select("-password -__v");
 
     if (user) {
       res.status(200).json({ user });
     } else {
-      const error = createError(404, 'User not found');
+      const error = createError(404, "User not found");
       next(error);
     }
   } catch (err) {
-    const error = createError(500, 'Unknown Error');
+    const error = createError(500, "Unknown Error");
     next(error);
   }
 };
@@ -168,16 +168,16 @@ const getUserProfileById = async (req, res, next) => {
 const getUserProfileByRoll = async (req, res, next) => {
   try {
     const rollNo = req.params.roll;
-    const user = await User.findOne({ rollNo }).select('-password -__v');
+    const user = await User.findOne({ rollNo }).select("-password -__v");
 
     if (user) {
       res.status(200).json({ user });
     } else {
-      const error = createError(404, 'User not found');
+      const error = createError(404, "User not found");
       next(error);
     }
   } catch (err) {
-    const error = createError(500, 'Unknown Error');
+    const error = createError(500, "Unknown Error");
     next(error);
   }
 };
@@ -201,27 +201,27 @@ const updateUserStatus = async (req, res, next) => {
       {
         approvalStatus,
         isActive,
-        isVerified: approvalStatus === 'approved' ? true : false,
+        isVerified: approvalStatus === "approved" ? true : false,
       },
       { new: true }
-    ).select('-password -__v');
+    ).select("-password -__v");
 
-    if (approvalStatus === 'approved') {
+    if (approvalStatus === "approved") {
       const mailBody = `<html><body><h3>Hello ${userName},</h3><h2>Welcome to Kuetianshub</h2><p><h3>We have verified your account. Please <a href=${process.env.FRONT_END_URL}/signin target="_blank">login</a> now.</h3></p><br/><p><h4>If you have any query or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></h4></p></body></html>`;
 
       const mailSendResponse = await sendMailToUser(
-        'kuetianshub@gmail.com',
+        "kuetianshub@gmail.com",
         userEmail,
         mailBody,
-        'Your account is now verified'
+        "Your account is now verified"
       );
     }
 
     res
       .status(201)
-      .json({ message: 'User update successful', userUpdate: userUpdate });
+      .json({ message: "User update successful", userUpdate: userUpdate });
   } catch (err) {
-    const error = createError(500, 'User update failed');
+    const error = createError(500, "User update failed");
     next(error);
   }
 };
@@ -239,19 +239,19 @@ const getPosts = async (req, res, next) => {
 
     if (active) query.isActive = active;
 
-    const posts = await Post.find(query).sort({ createdAt: 'desc' }).populate({
-      path: 'user',
-      select: 'firstName lastName rollNo',
+    const posts = await Post.find(query).sort({ createdAt: "desc" }).populate({
+      path: "user",
+      select: "firstName lastName rollNo",
     });
 
     if (posts) {
       res.status(200).json({ posts });
     } else {
-      const error = createError(404, 'Post not found');
+      const error = createError(404, "Post not found");
       next(error);
     }
   } catch (err) {
-    const error = createError(500, 'Unknown Error');
+    const error = createError(500, "Unknown Error");
     next(error);
   }
 };
@@ -271,13 +271,13 @@ const updatePostActiveStatus = async (req, res, next) => {
         isActive,
       },
       { new: true }
-    ).select('-__v');
+    ).select("-__v");
 
     let users = null;
 
     if (sendMailSelection) {
       users = await User.find(mailReceivers).select(
-        'firstName lastName departmentShort email'
+        "firstName lastName departmentShort email"
       );
 
       res.status(201).json({
@@ -290,14 +290,14 @@ const updatePostActiveStatus = async (req, res, next) => {
       if (users.length > 0) {
         users.push(
           {
-            firstName: 'Sehabur',
-            lastName: 'Rahman',
-            email: 'sehabur@gmail.com',
+            firstName: "Sehabur",
+            lastName: "Rahman",
+            email: "sehabur@gmail.com",
           },
           {
-            firstName: 'Saikat',
-            lastName: 'Das',
-            email: 'saikatdasnirob@gmail.com',
+            firstName: "Saikat",
+            lastName: "Das",
+            email: "saikatdasnirob@gmail.com",
           }
         );
 
@@ -305,10 +305,10 @@ const updatePostActiveStatus = async (req, res, next) => {
           const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy post at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
           await sendMailToUser(
-            'kuetianshub@gmail.com',
+            "kuetianshub@gmail.com",
             user.email,
             mailBody,
-            'New job vacancy post at Kuetianshub'
+            "New job vacancy post at Kuetianshub"
           );
         }
       }
@@ -319,7 +319,7 @@ const updatePostActiveStatus = async (req, res, next) => {
       });
     }
   } catch (err) {
-    const error = createError(500, 'Post active status update failed');
+    const error = createError(500, "Post active status update failed");
     next(error);
   }
 };
@@ -338,20 +338,20 @@ const getGalleryImages = async (req, res, next) => {
     if (active) query.isActive = active;
 
     const galleryImage = await GalleryImage.find(query)
-      .sort({ createdAt: 'desc' })
+      .sort({ createdAt: "desc" })
       .populate({
-        path: 'uploadedBy',
-        select: 'firstName lastName rollNo',
+        path: "uploadedBy",
+        select: "firstName lastName rollNo",
       });
 
     if (galleryImage) {
       res.status(200).json({ galleryImage });
     } else {
-      const error = createError(404, 'Image not found');
+      const error = createError(404, "Image not found");
       next(error);
     }
   } catch (err) {
-    const error = createError(500, 'Unknown Error');
+    const error = createError(500, "Unknown Error");
     next(error);
   }
 };
@@ -371,14 +371,14 @@ const updateGalleryImageActiveStatus = async (req, res, next) => {
         isActive,
       },
       { new: true }
-    ).select('-__v');
+    ).select("-__v");
 
     res.status(201).json({
-      message: 'Gallery Image active status update successful',
+      message: "Gallery Image active status update successful",
       galleryImageActiveStatusUpdate,
     });
   } catch (err) {
-    const error = createError(500, 'Gallery Image active status update failed');
+    const error = createError(500, "Gallery Image active status update failed");
     next(error);
   }
 };

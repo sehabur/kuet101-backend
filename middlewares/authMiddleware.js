@@ -1,30 +1,30 @@
-const jwt = require('jsonwebtoken');
-const createError = require('http-errors');
-const User = require('../models/userModel');
+const jwt = require("jsonwebtoken");
+const createError = require("http-errors");
+const User = require("../models/userModel");
 
 const checkLogin = async (req, res, next) => {
   try {
     if (
       req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
+      req.headers.authorization.startsWith("Bearer")
     ) {
-      const token = req.headers.authorization.split(' ')[1];
+      const token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (decoded) {
-        const user = await User.findById(decoded.id).select('-password -__v');
+        const user = await User.findById(decoded.id).select("-password -__v");
         if (user) {
           req.user = user;
           next();
         } else {
-          const error = createError(404, 'User not found');
+          const error = createError(404, "User not found");
           next(error);
         }
       } else {
-        const error = createError(401, 'Invalid Token');
+        const error = createError(401, "Invalid Token");
         next(error);
       }
     } else {
-      const error = createError(401, 'Invalid Token');
+      const error = createError(401, "Invalid Token");
       next(error);
     }
   } catch (err) {
@@ -34,10 +34,19 @@ const checkLogin = async (req, res, next) => {
 };
 
 const checkAdmin = async (req, res, next) => {
-  if (req?.user?.isAdmin) {
+  if (req.user.isAdmin) {
     next();
   } else {
-    const error = createError(401, 'User do not have proper access');
+    const error = createError(401, "User do not have proper access");
+    next(error);
+  }
+};
+
+const checkTryAdmin = async (req, res, next) => {
+  if (req.user.isAdmin && req.user.adminRole === "try") {
+    next();
+  } else {
+    const error = createError(401, "User do not have proper access");
     next(error);
   }
 };
@@ -45,4 +54,5 @@ const checkAdmin = async (req, res, next) => {
 module.exports = {
   checkLogin,
   checkAdmin,
+  checkTryAdmin,
 };
