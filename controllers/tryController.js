@@ -303,8 +303,38 @@ const deleteActiveDonor = async (req, res, next) => {
   }
 };
 
-const getSpecialDonation = async (req, res, next) => {};
-const getRecurringDonatio = async (req, res, next) => {};
+const getSpecialDonation = async (req, res, next) => {
+  try {
+    const donations = await TrySpecialDonation.find()
+      .sort({
+        createdAt: "desc",
+      })
+      .populate(
+        "user",
+        "-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v"
+      );
+    res.status(200).json({ donations });
+  } catch (err) {
+    const error = createError(500, "No donations found");
+    next(error);
+  }
+};
+const getRecurringDonation = async (req, res, next) => {
+  try {
+    const donations = await TryRecurringDonation.find()
+      .sort({
+        createdAt: "desc",
+      })
+      .populate(
+        "user",
+        "-password -isAdmin -isVerified -resetToken -resetTokenExpiry -__v"
+      );
+    res.status(200).json({ donations });
+  } catch (err) {
+    const error = createError(500, "No donations found");
+    next(error);
+  }
+};
 
 module.exports = {
   getDonations,
@@ -312,7 +342,7 @@ module.exports = {
   getDonationById,
   getSpecialDonation,
   createSpecialDonation,
-  getRecurringDonatio,
+  getRecurringDonation,
   createRecurringDonation,
   createDonation,
   deleteDonation,

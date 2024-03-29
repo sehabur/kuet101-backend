@@ -13,6 +13,8 @@ const {
   deleteDonation,
   createActiveDonor,
   deleteActiveDonor,
+  getSpecialDonation,
+  getRecurringDonation,
 } = require("../controllers/tryController");
 
 const { checkLogin, checkTryAdmin } = require("../middlewares/authMiddleware");
@@ -42,8 +44,14 @@ router
   .route("/activeDonor/:id")
   .delete(checkLogin, checkTryAdmin, deleteActiveDonor);
 
-router.route("/specialDonation").post(checkLogin, createSpecialDonation);
+router
+  .route("/specialDonation")
+  .get(checkLogin, checkTryAdmin, getSpecialDonation)
+  .post(checkLogin, createSpecialDonation);
 
-router.route("/recurringDonation").post(checkLogin, createRecurringDonation);
+router
+  .route("/recurringDonation")
+  .get(checkLogin, checkTryAdmin, getRecurringDonation)
+  .post(checkLogin, createRecurringDonation);
 
 module.exports = router;

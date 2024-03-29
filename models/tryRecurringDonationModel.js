@@ -30,7 +30,7 @@ const recurringDonationSchema = mongoose.Schema(
 );
 
 const TryRecurringDonation = mongoose.model(
-  "Recurring_donation",
+  "Try_Recurring_donation",
   recurringDonationSchema
 );
 
