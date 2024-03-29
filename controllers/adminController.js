@@ -4,7 +4,7 @@ const url = require("url");
 const User = require("../models/userModel");
 const Post = require("../models/postModel");
 const GalleryImage = require("../models/galleryImageModel");
-const { sendMailToUser } = require("../helper");
+const { sendMailToUser, sendMailToUserTryAccount } = require("../helper");
 const Tutor = require("../models/tutorModel");
 
 /*
@@ -263,7 +263,8 @@ const getPosts = async (req, res, next) => {
 */
 const updatePostActiveStatus = async (req, res, next) => {
   try {
-    const { postId, isActive, sendMailSelection, mailReceivers } = req.body;
+    const { postId, isActive, sendMailSelection, mailReceivers, mailSubject } =
+      req.body;
 
     const postActiveStatusUpdated = await Post.findByIdAndUpdate(
       postId,
@@ -302,14 +303,13 @@ const updatePostActiveStatus = async (req, res, next) => {
         );
 
         for (let user of users) {
-          const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h4>New job vacancy post at Kuetianshub</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated.title}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
+          const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
-          await sendMailToUser(
-            "kuetianshub@gmail.com",
-            user.email,
-            mailBody,
-            "New job vacancy post at Kuetianshub"
-          );
+          if (["superAdmin", "editor"].includes(req.user.adminRole)) {
+            await sendMailToUser(user.email, mailBody, mailSubject);
+          } else if (req.user.adminRole === "try") {
+            await sendMailToUserTryAccount(user.email, mailBody, mailSubject);
+          }
         }
       }
     } else {

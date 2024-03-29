@@ -3,12 +3,14 @@ const { validationResult } = require("express-validator");
 const url = require("url");
 const {
   uploadMultipleImage,
+  uploadSingleImage,
   deleteMultipleImage,
+  deleteSingleImage,
 } = require("../middlewares/fileUpload");
 
 const TryDonation = require("../models/tryDonationModel");
-const SpecialDonation = require("../models/specialDonationModel");
-const RecurringDonation = require("../models/recurringDonationModel");
+const TrySpecialDonation = require("../models/trySpecialDonationModel");
+const TryRecurringDonation = require("../models/tryRecurringDonationModel");
 const TryActiveDonor = require("../models/tryActiveDonorModel");
 
 /*
@@ -18,9 +20,7 @@ const TryActiveDonor = require("../models/tryActiveDonorModel");
 */
 const getDonations = async (req, res, next) => {
   try {
-    const donations = await TryDonation.find({
-      isActive: true,
-    }).sort({ createdAt: "desc" });
+    const donations = await TryDonation.find().sort({ createdAt: "desc" });
     res.status(200).json({ donations });
   } catch (err) {
     const error = createError(500, "No donations found");
@@ -35,10 +35,10 @@ const getDonations = async (req, res, next) => {
 */
 const getActiveDonors = async (req, res, next) => {
   try {
-    const donations = await TryActiveDonor.find({
+    const donors = await TryActiveDonor.find({
       isActive: true,
     }).sort({ createdAt: "desc" });
-    res.status(200).json({ donations });
+    res.status(200).json({ donors });
   } catch (err) {
     const error = createError(500, "No active donor found");
     next(error);
@@ -78,25 +78,12 @@ const getDonationById = async (req, res, next) => {
 */
 const createSpecialDonation = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors);
-    }
-    const { amount, description, category } = req.body;
+    const { amount, description, type } = req.body;
 
-    //   const newPost = new Post({
-    //     title,
-    //     description,
-    //     category,
-    //     images,
-    //     user: req.user.id,
-    //   });
-    //   const createdNewDonation = await newPost.save();
-
-    const createdNewDonation = await SpecialDonation.create({
+    const createdNewDonation = await TrySpecialDonation.create({
       amount,
       description,
-      category,
+      type,
       isActive: true,
       user: req.user.id,
     });
@@ -117,25 +104,12 @@ const createSpecialDonation = async (req, res, next) => {
 */
 const createRecurringDonation = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors);
-    }
-    const { amount, description, category } = req.body;
+    const { amount, description, type } = req.body;
 
-    //   const newPost = new Post({
-    //     title,
-    //     description,
-    //     category,
-    //     images,
-    //     user: req.user.id,
-    //   });
-    //   const createdNewDonation = await newPost.save();
-
-    const createdNewDonation = await RecurringDonation.create({
+    const createdNewDonation = await TryRecurringDonation.create({
       amount,
       description,
-      category,
+      type,
       isActive: true,
       user: req.user.id,
     });
@@ -149,7 +123,7 @@ const createRecurringDonation = async (req, res, next) => {
   }
 };
 
-// <----------- Try admin panel -------------> //
+// <------------- Try admin panel -------------> //
 
 /*
   @api:       POST /api/try/donation
@@ -158,13 +132,11 @@ const createRecurringDonation = async (req, res, next) => {
 */
 const createDonation = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors);
-    }
-    const { title, description, donationDetails } = req.body;
+    const { title, description, paymentDetails } = req.body;
 
-    const images = req?.files ? await uploadMultipleImage(req.files) : null;
+    const images = req?.files
+      ? await uploadMultipleImage(req.files, "try/")
+      : null;
 
     //   const newPost = new Post({
     //     title,
@@ -178,7 +150,7 @@ const createDonation = async (req, res, next) => {
     const createdNewDonation = await TryDonation.create({
       title,
       description,
-      donationDetails,
+      paymentDetails,
       images,
       isActive: true,
       user: req.user.id,
@@ -194,7 +166,45 @@ const createDonation = async (req, res, next) => {
 };
 
 /*
-  @api:       DELETE /api/try/deleteDonation/:id
+  @api:       PATCH /api/try/donation/
+  @desc:      Create a new create donation
+  @access:    private, try admin only
+*/
+const updateDonationById = async (req, res, next) => {
+  try {
+    const { postId, isActive } = req.body;
+
+    const post = await TryDonation.findById(postId);
+
+    if (post) {
+      const updatePost = await TryDonation.updateOne(
+        { _id: postId },
+        { isActive: isActive }
+      );
+
+      if (updatePost.modifiedCount === 1) {
+        res.status(201).json({
+          message: "Post edit successful",
+          postId,
+        });
+      } else {
+        res.status(400).json({
+          message: "Post edit failed",
+        });
+      }
+    } else {
+      res.status(400).json({
+        message: "Post edit failed as post not found",
+      });
+    }
+  } catch (err) {
+    const error = createError(500, err.message);
+    next(error);
+  }
+};
+
+/*
+  @api:       DELETE /api/try/donation/:id
   @desc:      Delete a post
   @access:    private, try admin only
 */
@@ -236,24 +246,11 @@ const deleteDonation = async (req, res, next) => {
 */
 const createActiveDonor = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors);
-    }
     const { title, type } = req.body;
 
-    const image = req?.file ? await uploadSingleImage(req.file) : null;
+    const image = req?.file ? await uploadSingleImage(req.file, "try/") : null;
 
-    //   const newPost = new Post({
-    //     title,
-    //     description,
-    //     category,
-    //     images,
-    //     user: req.user.id,
-    //   });
-    //   const createdNewDonation = await newPost.save();
-
-    const createdNewDonation = await TryDonation.create({
+    const createdNewDonation = await TryActiveDonor.create({
       title,
       type,
       image,
@@ -271,7 +268,7 @@ const createActiveDonor = async (req, res, next) => {
 };
 
 /*
-  @api:       DELETE /api/try/deleteDonation/:id
+  @api:       DELETE /api/try/activeDonor/:id
   @desc:      Delete a post
   @access:    private, try admin only
 */
@@ -284,7 +281,7 @@ const deleteActiveDonor = async (req, res, next) => {
       const deletePost = await TryActiveDonor.deleteOne({ _id: postId });
 
       if (deletePost.deletedCount === 1) {
-        post.images && (await deleteMultipleImage(post.images));
+        post.image && (await deleteSingleImage(post.image));
 
         res.status(200).json({
           message: "Post deletion successful",
@@ -306,14 +303,20 @@ const deleteActiveDonor = async (req, res, next) => {
   }
 };
 
+const getSpecialDonation = async (req, res, next) => {};
+const getRecurringDonatio = async (req, res, next) => {};
+
 module.exports = {
   getDonations,
   getActiveDonors,
   getDonationById,
+  getSpecialDonation,
   createSpecialDonation,
+  getRecurringDonatio,
   createRecurringDonation,
   createDonation,
   deleteDonation,
+  updateDonationById,
   createActiveDonor,
   deleteActiveDonor,
 };

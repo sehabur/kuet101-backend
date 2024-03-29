@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema(
   {
@@ -33,7 +33,7 @@ const userSchema = mongoose.Schema(
     },
     currentlyLiveIn: {
       type: String,
-      enum: ['insideBd', 'outsideBd'],
+      enum: ["insideBd", "outsideBd"],
       required: true,
     },
     presentDistrict: {
@@ -42,12 +42,12 @@ const userSchema = mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ['male', 'female', 'other'],
+      enum: ["male", "female", "other"],
       required: true,
     },
     bloodGroup: {
       type: String,
-      enum: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', 'N/A'],
+      enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-", "N/A"],
       required: true,
     },
     bloodDonationEnable: {
@@ -76,11 +76,11 @@ const userSchema = mongoose.Schema(
     status: {
       type: String,
       enum: [
-        'serviceHolder',
-        'businessman',
-        'seekingJob',
-        'higherStudy',
-        'runningStudent',
+        "serviceHolder",
+        "businessman",
+        "seekingJob",
+        "higherStudy",
+        "runningStudent",
       ],
       required: true,
     },
@@ -106,7 +106,7 @@ const userSchema = mongoose.Schema(
     },
     approvalStatus: {
       type: String,
-      enum: ['pending', 'approved', 'rejected'],
+      enum: ["pending", "approved", "rejected"],
       required: true,
     },
     isPopular: {
@@ -116,6 +116,11 @@ const userSchema = mongoose.Schema(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+    adminRole: {
+      type: String,
+      enum: ["superAdmin", "editor", "try"],
+      required: true,
     },
     isVerified: {
       type: Boolean,
@@ -133,6 +138,6 @@ const userSchema = mongoose.Schema(
   }
 );
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

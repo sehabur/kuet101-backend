@@ -62,6 +62,7 @@ const login = async (req, res, next) => {
           selfReferralCode,
           isActive,
           isAdmin,
+          adminRole,
           createdAt,
         } = user;
 
@@ -95,6 +96,7 @@ const login = async (req, res, next) => {
             selfReferralCode,
             isActive,
             isAdmin,
+            adminRole,
             createdAt,
             token: generateToken(user.id),
             isLoggedIn: true,

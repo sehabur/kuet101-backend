@@ -34,7 +34,10 @@ const checkLogin = async (req, res, next) => {
 };
 
 const checkAdmin = async (req, res, next) => {
-  if (req.user.isAdmin) {
+  if (
+    req.user.isAdmin &&
+    ["superAdmin", "editor"].includes(req.user.adminRole)
+  ) {
     next();
   } else {
     const error = createError(401, "User do not have proper access");
@@ -43,7 +46,10 @@ const checkAdmin = async (req, res, next) => {
 };
 
 const checkTryAdmin = async (req, res, next) => {
-  if (req.user.isAdmin && req.user.adminRole === "try") {
+  if (
+    req.user.isAdmin &&
+    ["superAdmin", "editor", "try"].includes(req.user.adminRole)
+  ) {
     next();
   } else {
     const error = createError(401, "User do not have proper access");

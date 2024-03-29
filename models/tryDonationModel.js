@@ -10,7 +10,7 @@ const tryDonationSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    donationDetails: {
+    paymentDetails: {
       type: String,
       required: true,
     },

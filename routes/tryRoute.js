@@ -9,6 +9,7 @@ const {
   createSpecialDonation,
   createRecurringDonation,
   createDonation,
+  updateDonationById,
   deleteDonation,
   createActiveDonor,
   deleteActiveDonor,
@@ -21,12 +22,8 @@ const { fileUpload } = require("../middlewares/fileUpload");
 router
   .route("/donation")
   .get(checkLogin, getDonations)
-  .post(
-    checkLogin,
-    checkTryAdmin,
-    fileUpload.array("image", 8),
-    createDonation
-  );
+  .post(checkLogin, checkTryAdmin, fileUpload.array("image", 8), createDonation)
+  .patch(checkLogin, checkTryAdmin, updateDonationById);
 router
   .route("/donation/:id")
   .get(checkLogin, getDonationById)
@@ -38,7 +35,7 @@ router
   .post(
     checkLogin,
     checkTryAdmin,
-    fileUpload.array("image", 8),
+    fileUpload.single("image"),
     createActiveDonor
   );
 router

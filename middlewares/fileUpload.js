@@ -1,20 +1,20 @@
-const multer = require('multer');
-const { v4: uuidv4 } = require('uuid');
-const AWS = require('aws-sdk');
-require('aws-sdk/lib/maintenance_mode_message').suppress = true;
-const createError = require('http-errors');
+const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
+const AWS = require("aws-sdk");
+require("aws-sdk/lib/maintenance_mode_message").suppress = true;
+const createError = require("http-errors");
 
 const MIME_TYPE_MAP = {
-  'image/jpeg': 'jpeg',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+  "image/png": "png",
 };
 
 // const credentials = new AWS.SharedIniFileCredentials();
 // AWS.config.credentials = credentials;
 // console.log(credentials);
 
-const bucketName = 'kuetianshub-bucket';
+const bucketName = "kuetianshub-bucket";
 
 const fileUpload = multer({
   storage: multer.memoryStorage(),
@@ -30,7 +30,7 @@ const initilizeAwsS3 = () => {
 
 const uploadSingleImage = async (
   file,
-  subFolder = 'images/',
+  subFolder = "images/",
   customKey = null
 ) => {
   const s3 = initilizeAwsS3();
@@ -43,7 +43,7 @@ const uploadSingleImage = async (
     );
 
     if (!imageUploadResult) {
-      const error = createError(400, 'Image upload failed');
+      const error = createError(400, "Image upload failed");
       console.log(error);
     }
     return imageUploadResult.Key; //uploaded image key//
@@ -55,7 +55,7 @@ const uploadSingleImage = async (
 
 const uploadMultipleImage = async (
   files,
-  subFolder = 'images/',
+  subFolder = "images/",
   customKey = null
 ) => {
   try {
@@ -71,7 +71,7 @@ const uploadMultipleImage = async (
       );
 
       if (!imageUploadResult) {
-        const error = createError(400, 'Image upload failed');
+        const error = createError(400, "Image upload failed");
         throw error;
       }
       uploadedImageArray.push(imageUploadResult.Key); //uploaded image key//
@@ -92,7 +92,7 @@ const fileUploadToAwsS3 = (s3, file, subFolder, customKey) => {
         Key:
           subFolder +
           (customKey ? customKey : uuidv4()) +
-          '.' +
+          "." +
           MIME_TYPE_MAP[file.mimetype],
       })
       .promise();

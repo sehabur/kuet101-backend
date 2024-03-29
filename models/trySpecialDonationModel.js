@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 
-const recurringDonationSchema = mongoose.Schema(
+const specialDonationSchema = mongoose.Schema(
   {
     amount: {
       type: Number,
       required: true,
     },
-    category: {
+    type: {
       type: String,
-      enum: ["1M", "3M", "6M", "1Y"],
+      enum: ["birthday", "anniversary", "iftar", "zakat", "other"],
       required: true,
     },
     description: {
@@ -29,9 +29,9 @@ const recurringDonationSchema = mongoose.Schema(
   }
 );
 
-const RecurringDonation = mongoose.model(
-  "Recurring_donation",
-  recurringDonationSchema
+const TrySpecialDonation = mongoose.model(
+  "Try_special_donation",
+  specialDonationSchema
 );
 
-module.exports = RecurringDonation;
+module.exports = TrySpecialDonation;
