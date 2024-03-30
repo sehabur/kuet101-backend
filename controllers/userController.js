@@ -454,10 +454,14 @@ const getUsersByQuery = async (req, res, next) => {
       } else if (key === "currentOrganization") {
         currentOrgKeywords = filterOptions[key].toLowerCase().split(" ");
       } else if (key === "country") {
-        secondaryFilter["presentDistrict"] = {
-          $regex: filterOptions[key].split("(")[0],
-          $options: "i",
-        };
+        if (filterOptions[key] === "Bangladesh") {
+          secondaryFilter["currentlyLiveIn"] = "insideBd";
+        } else {
+          secondaryFilter["presentDistrict"] = {
+            $regex: filterOptions[key].split("(")[0],
+            $options: "i",
+          };
+        }
       } else if (key === "interests" || key === "expertin") {
         secondaryFilter[key] = { $regex: filterOptions[key], $options: "i" };
       } else if (key === "bloodGroup") {

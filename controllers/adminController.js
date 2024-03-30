@@ -13,99 +13,99 @@ const Tutor = require("../models/tutorModel");
   @access:    public
 */
 const getDashboardData = async (req, res, next) => {
-  // try {
-  const users = await User.aggregate([
-    {
-      $facet: {
-        department: [
-          {
-            $group: {
-              _id: "$departmentShort",
-              count: { $sum: 1 },
+  try {
+    const users = await User.aggregate([
+      {
+        $facet: {
+          department: [
+            {
+              $group: {
+                _id: "$departmentShort",
+                count: { $sum: 1 },
+              },
             },
-          },
-          {
-            $sort: {
-              count: -1,
+            {
+              $sort: {
+                count: -1,
+              },
             },
-          },
-        ],
-        batch: [
-          {
-            $group: {
-              _id: "$batch",
-              count: { $sum: 1 },
+          ],
+          batch: [
+            {
+              $group: {
+                _id: "$batch",
+                count: { $sum: 1 },
+              },
             },
-          },
-          {
-            $sort: {
-              _id: 1,
+            {
+              $sort: {
+                _id: 1,
+              },
             },
-          },
-        ],
-        activeStatus: [
-          {
-            $group: {
-              _id: "$isActive",
-              count: { $sum: 1 },
+          ],
+          activeStatus: [
+            {
+              $group: {
+                _id: "$isActive",
+                count: { $sum: 1 },
+              },
             },
-          },
-        ],
-        approvalStatus: [
-          {
-            $group: {
-              _id: "$approvalStatus",
-              count: { $sum: 1 },
+          ],
+          approvalStatus: [
+            {
+              $group: {
+                _id: "$approvalStatus",
+                count: { $sum: 1 },
+              },
             },
-          },
-        ],
-        total: [
-          {
-            $group: {
-              _id: null,
-              count: { $sum: 1 },
+          ],
+          total: [
+            {
+              $group: {
+                _id: null,
+                count: { $sum: 1 },
+              },
             },
-          },
-        ],
+          ],
+        },
       },
-    },
-  ]);
+    ]);
 
-  const posts = await Post.aggregate([
-    {
-      $group: {
-        _id: { $toString: "$isActive" },
-        count: { $sum: 1 },
+    const posts = await Post.aggregate([
+      {
+        $group: {
+          _id: { $toString: "$isActive" },
+          count: { $sum: 1 },
+        },
       },
-    },
-  ]);
-  const tution = await Tutor.aggregate([
-    {
-      $group: {
-        _id: { $toString: "$isActive" },
-        count: { $sum: 1 },
+    ]);
+    const tution = await Tutor.aggregate([
+      {
+        $group: {
+          _id: { $toString: "$isActive" },
+          count: { $sum: 1 },
+        },
       },
-    },
-  ]);
-  const gallery = await GalleryImage.aggregate([
-    {
-      $group: {
-        _id: { $toString: "$isActive" },
-        count: { $sum: 1 },
+    ]);
+    const gallery = await GalleryImage.aggregate([
+      {
+        $group: {
+          _id: { $toString: "$isActive" },
+          count: { $sum: 1 },
+        },
       },
-    },
-  ]);
+    ]);
 
-  if (users) {
-    res.status(200).json({ users, posts, tution, gallery });
-  } else {
-    const error = createError(404, "Users not found");
+    if (users) {
+      res.status(200).json({ users, posts, tution, gallery });
+    } else {
+      const error = createError(404, "Users not found");
+      next(error);
+    }
+  } catch (err) {
+    const error = createError(500, "Unknown Error");
     next(error);
   }
-  // } catch (err) {
-  //   const error = createError(500, 'Unknown Error');
-  //   next(error);
-  // }
 };
 
 /*
@@ -303,7 +303,14 @@ const updatePostActiveStatus = async (req, res, next) => {
         );
 
         for (let user of users) {
-          const mailBody = `<html><body><h4>Hi ${user.firstName} ${user.lastName}!</h4><h3><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">${postActiveStatusUpdated.title}</a></h3><p>${postActiveStatusUpdated.description}</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postActiveStatusUpdated._id}">Go to this post</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
+          const mailBody = `<html><body><h4>Hi ${user.firstName} ${
+            user.lastName
+          }!</h4><h3><a href="https://www.kuetianshub.com/posts/${postId}">${
+            postActiveStatusUpdated.title
+          }</a></h3><p>${postActiveStatusUpdated.description.substr(
+            0,
+            500
+          )}...</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postId}">Go to this post for details</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
           if (["superAdmin", "editor"].includes(req.user.adminRole)) {
             await sendMailToUser(user.email, mailBody, mailSubject);
