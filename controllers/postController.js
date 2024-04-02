@@ -284,12 +284,10 @@ const getLearningFileStructure = async (req, res, next) => {
 */
 const getGalleryImages = async (req, res, next) => {
   try {
-    const {
-      batch,
-      dept: department,
-      selectall,
-      limit,
-    } = url.parse(req.url, true).query;
+    const { batch, department, selectall, limit } = url.parse(
+      req.url,
+      true
+    ).query;
 
     let images;
     if (selectall == 1) {
@@ -304,9 +302,12 @@ const getGalleryImages = async (req, res, next) => {
         .sort({ createdAt: "desc" })
         .limit(limit);
     } else {
+      const batchValue = batch ? batch : { $ne: " " };
+      const departmentValue = department ? department : { $ne: " " };
+
       images = await GalleryImage.find({
-        batch,
-        department,
+        batch: batchValue,
+        department: departmentValue,
         isActive: true,
       })
         .select({ __v: 0 })

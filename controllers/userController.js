@@ -462,6 +462,8 @@ const getUsersByQuery = async (req, res, next) => {
             $options: "i",
           };
         }
+      } else if (key === "presentDistrict") {
+        secondaryFilter["presentDistrict"] = filterOptions[key];
       } else if (key === "interests" || key === "expertin") {
         secondaryFilter[key] = { $regex: filterOptions[key], $options: "i" };
       } else if (key === "bloodGroup") {
@@ -473,7 +475,7 @@ const getUsersByQuery = async (req, res, next) => {
         secondaryFilter[key] = filterOptions[key];
       }
     }
-    console.log(secondaryFilter);
+    // console.log(secondaryFilter);
     let users;
 
     if (filterOptions.currentOrganization) {

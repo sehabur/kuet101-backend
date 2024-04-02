@@ -119,12 +119,12 @@ const userSchema = mongoose.Schema(
     },
     adminRole: {
       type: String,
-      enum: ["superAdmin", "editor", "try"],
-      required: true,
+      enum: ["superAdmin", "editor", "try", "none"],
+      default: "none",
     },
     isVerified: {
       type: Boolean,
-      required: true,
+      default: true,
     },
     resetToken: {
       type: String,

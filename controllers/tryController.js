@@ -14,18 +14,22 @@ const TryRecurringDonation = require("../models/tryRecurringDonationModel");
 const TryActiveDonor = require("../models/tryActiveDonorModel");
 
 /*
-  @api:       GET /api/try/donation
+  @api:       GET /api/try/donation?type=active&limit=4
   @desc:      get all donations
   @access:    private
 */
 const getDonations = async (req, res, next) => {
-  try {
-    const donations = await TryDonation.find().sort({ createdAt: "desc" });
-    res.status(200).json({ donations });
-  } catch (err) {
-    const error = createError(500, "No donations found");
-    next(error);
-  }
+  const { limit = 100 } = url.parse(req.url, true).query;
+
+  // try {
+  const donations = await TryDonation.find()
+    .sort({ createdAt: "desc" })
+    .limit(limit);
+  res.status(200).json({ donations });
+  // } catch (err) {
+  //   const error = createError(500, "No donations found");
+  //   next(error);
+  // }
 };
 
 /*
