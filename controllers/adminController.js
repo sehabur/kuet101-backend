@@ -262,78 +262,82 @@ const getPosts = async (req, res, next) => {
   @access:    private
 */
 const updatePostActiveStatus = async (req, res, next) => {
-  try {
-    const {
-      postId,
-      isActive = true,
-      sendMailSelection,
-      mailReceivers,
-      mailSubject,
-    } = req.body;
+  // try {
+  const {
+    postId,
+    isActive = true,
+    sendMailSelection,
+    mailReceivers,
+    mailSubject,
+  } = req.body;
 
-    const postActiveStatusUpdated = await Post.findByIdAndUpdate(
-      postId,
-      {
-        isActive,
-      },
-      { new: true }
-    ).select("-__v");
+  const postActiveStatusUpdated = await Post.findByIdAndUpdate(
+    postId,
+    {
+      isActive,
+    },
+    { new: true }
+  ).select("-__v");
 
-    let users = null;
+  let users = null;
 
-    if (sendMailSelection) {
-      users = await User.find(mailReceivers).select(
-        "firstName lastName departmentShort email"
+  console.log(mailReceivers);
+
+  if (sendMailSelection) {
+    users = await User.find(mailReceivers).select(
+      "firstName lastName departmentShort email"
+    );
+
+    res.status(201).json({
+      message: `Post status update successful. Email sent to ${
+        users ? users.length : 0
+      } users`,
+      postActiveStatusUpdated,
+    });
+
+    console.log(users);
+
+    if (users.length > 0) {
+      users.push(
+        {
+          firstName: "Sehabur",
+          lastName: "Rahman",
+          email: "sehabur@gmail.com",
+        },
+        {
+          firstName: "Saikat",
+          lastName: "Das",
+          email: "saikatdasnirob@gmail.com",
+        }
       );
 
-      res.status(201).json({
-        message: `Post status update successful. Email sent to ${
-          users ? users.length : 0
-        } users`,
-        postActiveStatusUpdated,
-      });
+      for (let user of users) {
+        const mailBody = `<html><body><h4>Hi ${user.firstName} ${
+          user.lastName
+        }!</h4><h3><a href="https://www.kuetianshub.com/posts/${postId}">${
+          postActiveStatusUpdated.title
+        }</a></h3><p>${postActiveStatusUpdated.description.substr(
+          0,
+          500
+        )}...</p><br/><h3><a href="https://www.kuetianshub.com/posts/${postId}">Go to this post for details</a></h3><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
-      if (users.length > 0) {
-        users.push(
-          {
-            firstName: "Sehabur",
-            lastName: "Rahman",
-            email: "sehabur@gmail.com",
-          },
-          {
-            firstName: "Saikat",
-            lastName: "Das",
-            email: "saikatdasnirob@gmail.com",
-          }
-        );
-
-        for (let user of users) {
-          const mailBody = `<html><body><h4>Hi ${user.firstName} ${
-            user.lastName
-          }!</h4><h3><a href="https://www.kuetianshub.com/posts/${postId}">${
-            postActiveStatusUpdated.title
-          }</a></h3><p>${postActiveStatusUpdated.description.substr(
-            0,
-            500
-          )}...</p><br/><h3><a href="https://www.kuetianshub.com/posts/${postId}">Go to this post for details</a></h3><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
-
-          if (["superAdmin", "editor"].includes(req.user.adminRole)) {
-            await sendMailToUser(user.email, mailBody, mailSubject);
-          } else if (req.user.adminRole === "try") {
-            await sendMailToUserTryAccount(user.email, mailBody, mailSubject);
-          }
+        if (["superAdmin", "editor"].includes(req.user.adminRole)) {
+          await sendMailToUser(user.email, mailBody, mailSubject);
+        } else if (req.user.adminRole === "try") {
+          await sendMailToUserTryAccount(user.email, mailBody, mailSubject);
         }
       }
-    } else {
-      res.status(201).json({
-        message: `Post status update successful. No email sent`,
-        postActiveStatusUpdated,
-      });
     }
-  } catch (err) {
-    const error = createError(500, "Post active status update failed");
-    next(error);
+  } else {
+    res.status(201).json({
+      message: `Post status update successful. No email sent`,
+      postActiveStatusUpdated,
+    });
   }
+  // } catch (err) {
+  //   const error = createError(500, "Post active status update failed");
+  //   next(error);
+  // }
 };
 
 /*

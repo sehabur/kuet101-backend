@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
@@ -12,38 +12,42 @@ const {
   updatePostActiveStatus,
   getGalleryImages,
   updateGalleryImageActiveStatus,
-} = require('../controllers/adminController');
+} = require("../controllers/adminController");
 
-const { checkLogin, checkAdmin } = require('../middlewares/authMiddleware');
+const {
+  checkLogin,
+  checkAdmin,
+  checkTryAdmin,
+} = require("../middlewares/authMiddleware");
 
-router.get('/getDashboardData', checkLogin, checkAdmin, getDashboardData);
+router.get("/getDashboardData", checkLogin, checkAdmin, getDashboardData);
 
-router.get('/getUsers', checkLogin, checkAdmin, getUsers);
+router.get("/getUsers", checkLogin, checkAdmin, getUsers);
 
-router.get('/getPosts', checkLogin, checkAdmin, getPosts);
+router.get("/getPosts", checkLogin, checkAdmin, getPosts);
 
-router.get('/getGalleryImages', checkLogin, checkAdmin, getGalleryImages);
+router.get("/getGalleryImages", checkLogin, checkAdmin, getGalleryImages);
 
 router.get(
-  '/getUserByRollNo/:roll',
+  "/getUserByRollNo/:roll",
   checkLogin,
   checkAdmin,
   getUserProfileByRoll
 );
 
-router.get('/getUserById/:id', checkLogin, checkAdmin, getUserProfileById);
+router.get("/getUserById/:id", checkLogin, checkAdmin, getUserProfileById);
 
-router.patch('/updateUserStatus', checkLogin, checkAdmin, updateUserStatus);
+router.patch("/updateUserStatus", checkLogin, checkAdmin, updateUserStatus);
 
 router.patch(
-  '/updatePostActiveStatus',
+  "/updatePostActiveStatus",
   checkLogin,
-  checkAdmin,
+  checkTryAdmin,
   updatePostActiveStatus
 );
 
 router.patch(
-  '/updateGalleryImageActiveStatus',
+  "/updateGalleryImageActiveStatus",
   checkLogin,
   checkAdmin,
   updateGalleryImageActiveStatus
