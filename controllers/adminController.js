@@ -263,8 +263,13 @@ const getPosts = async (req, res, next) => {
 */
 const updatePostActiveStatus = async (req, res, next) => {
   try {
-    const { postId, isActive, sendMailSelection, mailReceivers, mailSubject } =
-      req.body;
+    const {
+      postId,
+      isActive = true,
+      sendMailSelection,
+      mailReceivers,
+      mailSubject,
+    } = req.body;
 
     const postActiveStatusUpdated = await Post.findByIdAndUpdate(
       postId,
@@ -310,7 +315,7 @@ const updatePostActiveStatus = async (req, res, next) => {
           }</a></h3><p>${postActiveStatusUpdated.description.substr(
             0,
             500
-          )}...</p><br/><h4><a href="https://www.kuetianshub.com/posts/${postId}">Go to this post for details</a></h4><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
+          )}...</p><br/><h3><a href="https://www.kuetianshub.com/posts/${postId}">Go to this post for details</a></h3><h4><a href="https://www.kuetianshub.com">Visit Kuetianshub</a></h4><br/><p>If you face any difficulties or need any assistance please contact us at <a href="mailto:kuetianshub@gmail.com">kuetianshub@gmail.com</a></p></body></html>`;
 
           if (["superAdmin", "editor"].includes(req.user.adminRole)) {
             await sendMailToUser(user.email, mailBody, mailSubject);

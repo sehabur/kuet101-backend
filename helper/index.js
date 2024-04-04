@@ -34,8 +34,8 @@ const sendMailToUserTryAccount = async (mailTo, mailBody, subject) => {
       service: "gmail",
       host: "smtp.gmail.com",
       auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
+        user: process.env.TRY_MAIL_USER,
+        pass: process.env.TRY_MAIL_PASS,
       },
     })
   );
@@ -43,8 +43,8 @@ const sendMailToUserTryAccount = async (mailTo, mailBody, subject) => {
   try {
     return await transporter.sendMail({
       from: {
-        name: "Kuetainshub",
-        address: mailFrom,
+        name: "TRY-Admin",
+        address: "try@kuet.ac.bd",
       },
       to: mailTo,
       subject,

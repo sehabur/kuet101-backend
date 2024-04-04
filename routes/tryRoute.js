@@ -16,6 +16,7 @@ const {
   getSpecialDonation,
   getRecurringDonation,
 } = require("../controllers/tryController");
+const { sendMailToUserTryAccount } = require("../helper");
 
 const { checkLogin, checkTryAdmin } = require("../middlewares/authMiddleware");
 
@@ -53,5 +54,15 @@ router
   .route("/recurringDonation")
   .get(checkLogin, checkTryAdmin, getRecurringDonation)
   .post(checkLogin, createRecurringDonation);
+
+// router.route("/test").get(async (req, res) => {
+//   const a = await sendMailToUserTryAccount(
+//     "sehabur@gmail.com",
+//     "<h1>test test</h1>",
+//     "Test"
+//   );
+//   console.log(a);
+//   res.send("success");
+// });
 
 module.exports = router;
