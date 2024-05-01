@@ -4,7 +4,6 @@ const recurringDonationSchema = mongoose.Schema(
   {
     amount: {
       type: Number,
-      required: true,
     },
     type: {
       type: String,

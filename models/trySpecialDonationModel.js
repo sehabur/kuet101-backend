@@ -4,11 +4,19 @@ const specialDonationSchema = mongoose.Schema(
   {
     amount: {
       type: Number,
-      required: true,
     },
     type: {
       type: String,
-      enum: ["birthday", "anniversary", "iftar", "zakat", "other"],
+      enum: [
+        "birthday",
+        "anniversary",
+        "iftar",
+        "zakat",
+        "other",
+        "winter",
+        "khulkhani",
+        "scholarship",
+      ],
       required: true,
     },
     description: {
