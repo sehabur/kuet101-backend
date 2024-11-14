@@ -1,7 +1,10 @@
 // External imports //
 var express = require("express");
+const fs = require("fs");
+const path = require("path");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const morgan = require("morgan");
 
 // Internal imports //
 const userRoute = require("./routes/userRoute");
@@ -34,6 +37,18 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+app.set("trust proxy", true);
+
+app.use(
+  morgan("combined", {
+    stream: {
+      write: (message) => {
+        fs.appendFileSync(path.join(__dirname, "access.log"), message);
+      },
+    },
+  })
+);
 
 // Routes //
 app.use("/api/users", userRoute);

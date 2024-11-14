@@ -34,23 +34,23 @@ const uploadSingleImage = async (
   customKey = null
 ) => {
   const s3 = initilizeAwsS3();
-  try {
-    const imageUploadResult = await fileUploadToAwsS3(
-      s3,
-      file,
-      subFolder,
-      customKey
-    );
+  // try {
+  const imageUploadResult = await fileUploadToAwsS3(
+    s3,
+    file,
+    subFolder,
+    customKey
+  );
 
-    if (!imageUploadResult) {
-      const error = createError(400, "Image upload failed");
-      console.log(error);
-    }
-    return imageUploadResult.Key; //uploaded image key//
-  } catch (err) {
-    const error = createError(400, err.message);
+  if (!imageUploadResult) {
+    const error = createError(400, "Image upload failed");
     console.log(error);
   }
+  return imageUploadResult.Key; //uploaded image key//
+  // } catch (err) {
+  //   const error = createError(400, err.message);
+  //   console.log(error);
+  // }
 };
 
 const uploadMultipleImage = async (
@@ -84,23 +84,23 @@ const uploadMultipleImage = async (
 };
 
 const fileUploadToAwsS3 = (s3, file, subFolder, customKey) => {
-  try {
-    const imageUploadResult = s3
-      .upload({
-        Bucket: bucketName,
-        Body: file.buffer,
-        Key:
-          subFolder +
-          (customKey ? customKey : uuidv4()) +
-          "." +
-          MIME_TYPE_MAP[file.mimetype],
-      })
-      .promise();
-    return imageUploadResult;
-  } catch (err) {
-    const error = createError(400, err.message);
-    throw error;
-  }
+  // try {
+  const imageUploadResult = s3
+    .upload({
+      Bucket: bucketName,
+      Body: file.buffer,
+      Key:
+        subFolder +
+        (customKey ? customKey : uuidv4()) +
+        "." +
+        MIME_TYPE_MAP[file.mimetype],
+    })
+    .promise();
+  return imageUploadResult;
+  // } catch (err) {
+  //   const error = createError(400, err.message);
+  //   throw error;
+  // }
 };
 
 const deleteSingleImage = async (key) => {
