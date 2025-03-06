@@ -56,7 +56,7 @@ mongoose
  */
 server.listen(process.env.PORT || port, "0.0.0.0", () => {
   console.log(
-    `Server running in ${process.env.NODE_ENV} mode on port ${process.env.PORT}`
+    `Server running in ${process.env.NODE_ENV} mode at 0.0.0.0 on port ${process.env.PORT}`
   );
 });
 
