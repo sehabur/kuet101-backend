@@ -27,7 +27,7 @@ const initilizeAwsS3 = () => {
 
   AWS.config.update({
     // region: "us-west-2",
-    accessKeyId: process.env.aws_secret_access_key,
+    accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
   });
 
