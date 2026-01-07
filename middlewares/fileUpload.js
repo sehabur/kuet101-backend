@@ -22,8 +22,14 @@ const fileUpload = multer({
 });
 
 const initilizeAwsS3 = () => {
-  const credentials = new AWS.SharedIniFileCredentials();
-  AWS.config.credentials = credentials;
+  // const credentials = new AWS.SharedIniFileCredentials();
+  // AWS.config.credentials = credentials;
+
+  AWS.config.update({
+    // region: "us-west-2",
+    accessKeyId: process.env.aws_secret_access_key,
+    secretAccessKey: process.env.aws_secret_access_key,
+  });
 
   return new AWS.S3();
 };
