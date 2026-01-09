@@ -21,7 +21,13 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV || "production"}` });
 
 var app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://www.kuetianshub.com",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
