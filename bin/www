@@ -31,13 +31,12 @@ mongoose
   .then(() => console.log("Mongodb cluster connected"))
   .catch((err) => console.log(err));
 
-
 /**
  * Listen on provided port, on all network interfaces.
  */
-server.listen(process.env.PORT || port, () => {
+server.listen(process.env.PORT || port, "0.0.0.0", () => {
   console.log(
-    `Server running in ${process.env.NODE_ENV} mode on port ${process.env.PORT}`
+    `Server running in ${process.env.NODE_ENV} mode on port ${process.env.PORT}`,
   );
 });
 
